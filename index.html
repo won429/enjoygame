@@ -6,7 +6,7 @@
     <title>enjoy page - Games</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 폰트 추가: 학교안심 둥근미소 (로고용) -->
+    <!-- 폰트 추가: 학교안심 둥근미소 (로고용 & 타이틀용) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fonts-archive/HakgyoansimDunggeunmiso/HakgyoansimDunggeunmiso.css" type="text/css"/>
     
     <style>
@@ -18,7 +18,7 @@
             font-style: normal;
         }
 
-        /* 폰트 추가: 대한민국정부상징체 (타이틀용) */
+        /* 폰트 추가: 대한민국정부상징체 (기타용) */
         @font-face {
             font-family: 'ROKGSans';
             src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/ROKGSansBold.woff') format('woff');
@@ -32,11 +32,12 @@
             -webkit-tap-highlight-color: transparent;
         }
         
+        /* 학교안심 둥근미소 클래스 */
         .font-logo {
             font-family: 'Hakgyoansim Dunggeunmiso', sans-serif;
         }
 
-        /* 정부상징체 클래스 + 두께감 추가 */
+        /* 정부상징체 클래스 */
         .font-gov {
             font-family: 'ROKGSans', sans-serif;
             text-shadow: 1px 0 0 currentColor, 0 1px 0 currentColor; 
@@ -69,7 +70,7 @@
     <div id="screen-game-menu" class="h-full w-full flex flex-col items-center justify-start p-6 pt-12 bg-gray-50 overflow-y-auto fade-in">
         <div class="w-full max-w-xs flex flex-col gap-6">
             
-            <!-- [NEW] 상단 뒤로가기 버튼 (외부 링크) -->
+            <!-- 상단 뒤로가기 버튼 (외부 링크) -->
             <div class="w-full flex justify-start -mb-4">
                 <button onclick="window.location.href='https://won429.github.io/enjoysite/'" class="p-2 -ml-2 text-gray-400 hover:text-black transition-colors" aria-label="메인으로 돌아가기">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -82,7 +83,8 @@
             <div class="flex items-center justify-center gap-3 mb-2">
                 <!-- image.png 파일이 같은 폴더에 있어야 합니다 -->
                 <img src="./image.png" alt="Logo" class="w-10 h-10 object-contain drop-shadow-sm" onerror="this.style.display='none'"> 
-                <h2 class="text-2xl font-bold font-gov text-black tracking-tight pt-1">엔조이 회장실</h2>
+                <!-- 타이틀 변경: Random enjoy, 폰트 변경: 학교안심 둥근미소 (font-logo) -->
+                <h2 class="text-2xl font-bold font-logo text-black tracking-tight pt-1">Random enjoy</h2>
             </div>
 
             <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 mb-2">
@@ -105,11 +107,20 @@
                 </div>
             </button>
 
-            <!-- 청소/설거지 뽑기 -->
+            <!-- 청소/설거지 뽑기 (아이콘 변경: 빗자루) -->
             <button onclick="switchScreen('screen-chore-game'); resetChoreGame();" class="btn-hover w-full bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-left flex flex-col gap-3 group relative overflow-hidden">
                 <div class="absolute right-[-20px] top-[-20px] w-24 h-24 bg-green-100 rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
                 <div class="w-12 h-12 bg-green-500 text-white rounded-xl flex items-center justify-center z-10 shadow-md shadow-green-200">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"></path><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"></path></svg>
+                    <!-- 빗자루 아이콘 -->
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 22l10-10"></path> <!-- 빗자루 대 -->
+                        <path d="M15 9l4-4 3 3-4 4"></path> <!-- 빗자루 머리 윗부분 -->
+                        <path d="M12 12l2.5 2.5"></path> <!-- 묶음 -->
+                        <path d="M8 16l4 4"></path> <!-- 묶음 -->
+                        <path d="M4 20l7-7"></path> <!-- 솔 부분 -->
+                        <path d="M10 14l-2 2"></path> <!-- 솔 디테일 -->
+                        <path d="M16 8l-2 2"></path> <!-- 솔 디테일 -->
+                    </svg>
                 </div>
                 <div class="z-10">
                     <h3 class="text-lg font-bold mb-1">청소 & 설거지 당번</h3>
@@ -211,7 +222,8 @@
             <div class="w-full bg-blue-50 rounded-2xl p-6 flex items-center justify-between border border-blue-100">
                 <div class="flex flex-col gap-1">
                     <div class="flex items-center gap-2 text-blue-600 mb-1">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"></path></svg>
+                        <!-- 청소 아이콘 (빗자루로 변경) -->
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22l10-10"></path><path d="M15 9l4-4 3 3-4 4"></path><path d="M12 12l2.5 2.5"></path><path d="M8 16l4 4"></path><path d="M4 20l7-7"></path></svg>
                         <span class="text-xs font-bold uppercase tracking-wider">Cleaning</span>
                     </div>
                     <span class="text-lg font-bold text-gray-900">청소 당번</span>
