@@ -366,23 +366,9 @@
             const oldState = globalState;
             globalState = newData;
 
-            // 1. 관리자 설정 변경 감지
+            // 1. 관리자 설정 변경 감지 (UI 업데이트 등)
             if (newData.admin) {
                 updateUnlimitedUI(newData.admin.unlimited);
-                // 리셋 타임스탬프가 변경되었으면 로컬 기록 삭제
-                const lastReset = parseInt(localStorage.getItem('lastResetTs') || '0');
-                if (newData.admin.resetTimestamp > lastReset) {
-                    localStorage.removeItem('hasPlayed_car');
-                    localStorage.removeItem('hasPlayed_chore');
-                    localStorage.removeItem('hasPlayed_trip');
-                    localStorage.setItem('lastResetTs', newData.admin.resetTimestamp);
-                    alert('관리자에 의해 뽑기 기회가 초기화되었습니다!');
-                    
-                    // [추가] 화면의 결과 텍스트도 초기화
-                    window.resetCarGame();
-                    window.resetChoreGame();
-                    window.resetTripGame();
-                }
                 updateButtonVisibility(); // 관리자 설정 변경 시 버튼 상태 갱신
             }
 
@@ -427,26 +413,29 @@
             }
         }
 
-        // 버튼 가리기/보이기 로직
+        // 버튼 가리기/보이기 로직 (전역 상태 기반)
         window.updateButtonVisibility = () => {
             const isUnlimited = globalState.admin?.unlimited;
             
-            // Car
-            if (!isUnlimited && localStorage.getItem('hasPlayed_car')) {
+            // Car: DB에 결과가 있고(timestamp > 0) 무한모드가 아니면 숨김
+            const carHasResult = globalState.car?.timestamp > 0;
+            if (!isUnlimited && carHasResult) {
                 document.getElementById('btn-run-car').style.display = 'none';
             } else {
                 document.getElementById('btn-run-car').style.display = 'block';
             }
 
             // Chore
-            if (!isUnlimited && localStorage.getItem('hasPlayed_chore')) {
+            const choreHasResult = globalState.chore?.timestamp > 0;
+            if (!isUnlimited && choreHasResult) {
                 document.getElementById('btn-run-chore').style.display = 'none';
             } else {
                 document.getElementById('btn-run-chore').style.display = 'block';
             }
 
             // Trip
-            if (!isUnlimited && localStorage.getItem('hasPlayed_trip')) {
+            const tripHasResult = globalState.trip?.timestamp > 0;
+            if (!isUnlimited && tripHasResult) {
                 document.getElementById('btn-run-trip').style.display = 'none';
             } else {
                 document.getElementById('btn-run-trip').style.display = 'block';
@@ -535,22 +524,14 @@
 
         // ==================== 게임 요청 로직 (Client -> DB) ====================
         
-        // 공통: 실행 가능 여부 체크
+        // 공통: 실행 가능 여부 체크 (로컬스토리지 방식 폐기, 글로벌 상태로 체크)
         function canPlay(gameType) {
             if (globalState.admin?.unlimited) return true; 
-            if (localStorage.getItem(`hasPlayed_${gameType}`)) {
-                alert('이미 참여하셨습니다. (평생 1회 제한)');
+            if (globalState[gameType]?.timestamp > 0) {
+                alert('이미 결과가 나와있습니다! (관리자가 초기화해야 다시 가능)');
                 return false;
             }
             return true;
-        }
-
-        // 공통: 실행 후 처리
-        function markPlayed(gameType) {
-            if (!globalState.admin?.unlimited) {
-                localStorage.setItem(`hasPlayed_${gameType}`, 'true');
-            }
-            updateButtonVisibility(); // 버튼 상태 즉시 갱신
         }
 
         // 1. 차량 게임 요청
@@ -587,8 +568,6 @@
                     timestamp: Date.now()
                 }
             }, { merge: true });
-            
-            markPlayed('car');
         };
 
         // 2. 청소 게임 요청
@@ -604,7 +583,6 @@
                     timestamp: Date.now()
                 }
             }, { merge: true });
-            markPlayed('chore');
         };
 
         // 3. 여행 게임 요청
@@ -627,7 +605,6 @@
                     timestamp: Date.now()
                 }
             }, { merge: true });
-            markPlayed('trip');
         };
 
 
