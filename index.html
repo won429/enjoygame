@@ -336,7 +336,9 @@
             oscillator.type = 'sine';
             oscillator.frequency.setValueAtTime(659, audioCtx.currentTime);
             oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
-            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            // 볼륨: 시작했다가 0.4초 뒤에 사라짐
+            // [수정] 0.8 -> 3.0 (아주 크게 증폭!)
+            gainNode.gain.setValueAtTime(3.0, audioCtx.currentTime); 
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
@@ -349,7 +351,9 @@
             const gainNode = audioCtx.createGain();
             oscillator.type = 'triangle';
             oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
-            gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            // 아주 짧은 '틱'
+            // [수정] 0.2 -> 1.0 (훨씬 잘 들리게!)
+            gainNode.gain.setValueAtTime(1.0, audioCtx.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
