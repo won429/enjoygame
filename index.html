@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>enjoy page - Games</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 폰트 추가: 학교안심 둥근미소 (로고용) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fonts-archive/HakgyoansimDunggeunmiso/HakgyoansimDunggeunmiso.css" type="text/css"/>
+    
+    <style>
+        /* 폰트 추가: G마켓 산스 (본문용) */
+        @font-face {
+            font-family: 'GmarketSansMedium';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* 폰트 추가: 대한민국정부상징체 (타이틀용) */
+        @font-face {
+            font-family: 'ROKGSans';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/ROKGSansBold.woff') format('woff');
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        body { 
+            font-family: 'GmarketSansMedium', sans-serif;
+            background-color: #f8f9fa;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .font-logo {
+            font-family: 'Hakgyoansim Dunggeunmiso', sans-serif;
+        }
+
+        /* 정부상징체 클래스 + 두께감 추가 */
+        .font-gov {
+            font-family: 'ROKGSans', sans-serif;
+            text-shadow: 1px 0 0 currentColor, 0 1px 0 currentColor; 
+        }
+
+        /* 버튼 호버 애니메이션 */
+        .btn-hover {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-hover:active {
+            transform: scale(0.96);
+        }
+
+        /* 화면 전환 애니메이션 */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .hidden-screen { display: none; }
+        
+        /* 셔플 중일 때 텍스트 효과 */
+        .shuffling {
+            color: #005ED2;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body class="h-[100dvh] w-full bg-gray-50 overflow-hidden relative">
+
+    <!-- ==================== 1. 게임 메뉴 선택 화면 (기본 화면) ==================== -->
+    <div id="screen-game-menu" class="h-full w-full flex flex-col items-center justify-start p-6 pt-12 bg-gray-50 overflow-y-auto fade-in">
+        <div class="w-full max-w-xs flex flex-col gap-6">
+            
+            <!-- 헤더: 사용자 이미지 로고 + 타이틀 -->
+            <div class="flex items-center justify-center gap-3 mb-2">
+                <!-- image.png 파일이 같은 폴더에 있어야 합니다 -->
+                <img src="./image.png" alt="Logo" class="w-10 h-10 object-contain drop-shadow-sm" onerror="this.style.display='none'"> 
+                <h2 class="text-2xl font-bold font-gov text-black tracking-tight pt-1">엔조이 회장실</h2>
+            </div>
+
+            <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 mb-2">
+                <p class="text-xs text-blue-500 font-bold mb-1">PARTICIPANTS</p>
+                <p class="text-sm text-gray-700 leading-relaxed font-medium">
+                    전시기, 오스틴, 지노, 홍박사, 성원제 <br>
+                    <span class="text-gray-400 text-xs">(총 5명)</span>
+                </p>
+            </div>
+
+            <!-- 차량 배치 뽑기 -->
+            <button onclick="switchScreen('screen-car-game'); resetCarGame();" class="btn-hover w-full bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-left flex flex-col gap-3 group relative overflow-hidden">
+                <div class="absolute right-[-20px] top-[-20px] w-24 h-24 bg-blue-100 rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
+                <div class="w-12 h-12 bg-[#005ED2] text-white rounded-xl flex items-center justify-center z-10 shadow-md shadow-blue-200">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+                </div>
+                <div class="z-10">
+                    <h3 class="text-lg font-bold mb-1">차량 & 운전자 뽑기</h3>
+                    <p class="text-xs text-gray-500">운전자와 좌석 위치를 랜덤으로 정합니다.</p>
+                </div>
+            </button>
+
+            <!-- 청소/설거지 뽑기 -->
+            <button onclick="switchScreen('screen-chore-game'); resetChoreGame();" class="btn-hover w-full bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-left flex flex-col gap-3 group relative overflow-hidden">
+                <div class="absolute right-[-20px] top-[-20px] w-24 h-24 bg-green-100 rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
+                <div class="w-12 h-12 bg-green-500 text-white rounded-xl flex items-center justify-center z-10 shadow-md shadow-green-200">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"></path><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"></path></svg>
+                </div>
+                <div class="z-10">
+                    <h3 class="text-lg font-bold mb-1">청소 & 설거지 당번</h3>
+                    <p class="text-xs text-gray-500">오늘의 일꾼을 공정하게 뽑아드립니다.</p>
+                </div>
+            </button>
+
+            <!-- 여행지 뽑기 -->
+            <button onclick="switchScreen('screen-trip-game'); resetTripGame();" class="btn-hover w-full bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-left flex flex-col gap-3 group relative overflow-hidden">
+                <div class="absolute right-[-20px] top-[-20px] w-24 h-24 bg-purple-100 rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
+                <div class="w-12 h-12 bg-purple-500 text-white rounded-xl flex items-center justify-center z-10 shadow-md shadow-purple-200">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                </div>
+                <div class="z-10">
+                    <h3 class="text-lg font-bold mb-1">여행지 뽑기</h3>
+                    <p class="text-xs text-gray-500">어디로 떠날까요? 전국 8도 랜덤 추천!</p>
+                </div>
+            </button>
+
+        </div>
+    </div>
+
+    <!-- ==================== 2. 차량 배치 게임 화면 ==================== -->
+    <div id="screen-car-game" class="hidden-screen h-full w-full flex-col items-center justify-start p-6 pt-8 bg-white overflow-y-auto">
+        <div class="w-full max-w-xs flex flex-col gap-4">
+            <div class="flex items-center justify-between mb-4">
+                <button onclick="switchScreen('screen-game-menu')" class="p-2 -ml-2 text-gray-400 hover:text-black">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                <h2 class="text-lg font-bold">차량 좌석 배치</h2>
+                <div class="w-8"></div>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex flex-col gap-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-bold text-gray-700">운전자 선정 방식</span>
+                    <div class="bg-gray-200 p-1 rounded-lg flex text-xs font-bold">
+                        <button id="mode-random" onclick="setDriverMode('random')" class="px-3 py-1.5 rounded-md bg-white text-black shadow-sm transition-all">랜덤</button>
+                        <button id="mode-manual" onclick="setDriverMode('manual')" class="px-3 py-1.5 rounded-md text-gray-400 transition-all">수동</button>
+                    </div>
+                </div>
+                <div id="manual-selector" class="hidden flex-wrap gap-2 pt-2 border-t border-gray-200">
+                    <p class="w-full text-xs text-gray-400 mb-1">운전할 사람을 먼저 선택하세요:</p>
+                </div>
+            </div>
+
+            <div class="relative w-full aspect-[3/4] bg-[#f0f4f8] rounded-[2.5rem] border-4 border-gray-100 p-6 flex flex-col justify-between shadow-inner mt-2">
+                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-8 bg-gradient-to-b from-blue-100/50 to-transparent rounded-b-3xl"></div>
+                <div class="flex gap-4 mb-4">
+                    <div class="w-1/2 aspect-square bg-white rounded-2xl border-2 border-[#005ED2] flex flex-col items-center justify-center relative shadow-sm overflow-hidden transition-all duration-300">
+                        <span class="absolute top-2 left-2 text-[10px] text-[#005ED2] font-bold bg-blue-50 px-1.5 py-0.5 rounded">DRIVER</span>
+                        <div id="seat-driver" class="text-lg font-bold text-black">?</div>
+                        <svg class="absolute bottom-2 right-2 text-blue-100 w-8 h-8" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+                    </div>
+                    <div class="w-1/2 aspect-square bg-white rounded-2xl border border-gray-200 flex flex-col items-center justify-center relative shadow-sm">
+                        <span class="absolute top-2 left-2 text-[10px] text-gray-400">PASSENGER</span>
+                        <div id="seat-p1" class="text-lg font-bold text-gray-800">?</div>
+                    </div>
+                </div>
+                <div class="flex gap-2 h-24">
+                    <div class="flex-1 bg-white rounded-xl border border-gray-200 flex items-center justify-center shadow-sm">
+                        <div id="seat-b1" class="text-sm font-bold text-gray-800">?</div>
+                    </div>
+                    <div class="flex-1 bg-white rounded-xl border border-gray-200 flex items-center justify-center shadow-sm">
+                        <div id="seat-b2" class="text-sm font-bold text-gray-800">?</div>
+                    </div>
+                    <div class="flex-1 bg-white rounded-xl border border-gray-200 flex items-center justify-center shadow-sm">
+                        <div id="seat-b3" class="text-sm font-bold text-gray-800">?</div>
+                    </div>
+                </div>
+                <p class="text-center text-xs text-gray-400 mt-2">BACK SEATS</p>
+            </div>
+
+            <button id="btn-run-car" onclick="runCarGame()" class="w-full bg-[#005ED2] text-white py-4 rounded-xl font-bold shadow-lg shadow-blue-200 active:scale-95 transition-transform mt-2 text-lg disabled:opacity-50 disabled:active:scale-100">
+                결과 확인하기
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== 3. 청소 게임 화면 ==================== -->
+    <div id="screen-chore-game" class="hidden-screen h-full w-full flex-col items-center justify-start p-6 pt-8 bg-white overflow-y-auto">
+        <div class="w-full max-w-xs flex flex-col gap-6">
+            <div class="flex items-center justify-between mb-2">
+                <button onclick="switchScreen('screen-game-menu')" class="p-2 -ml-2 text-gray-400 hover:text-black">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                <h2 class="text-lg font-bold">당번 뽑기</h2>
+                <div class="w-8"></div>
+            </div>
+
+            <p class="text-center text-gray-500 text-sm mb-4">
+                오늘의 희생양(?)을 뽑아주세요.<br>
+                <span class="text-xs text-gray-300">공정하게 랜덤으로 추첨합니다.</span>
+            </p>
+
+            <div class="w-full bg-blue-50 rounded-2xl p-6 flex items-center justify-between border border-blue-100">
+                <div class="flex flex-col gap-1">
+                    <div class="flex items-center gap-2 text-blue-600 mb-1">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"></path></svg>
+                        <span class="text-xs font-bold uppercase tracking-wider">Cleaning</span>
+                    </div>
+                    <span class="text-lg font-bold text-gray-900">청소 당번</span>
+                </div>
+                <div id="result-cleaning" class="h-12 px-6 bg-white rounded-xl flex items-center justify-center font-bold text-xl text-blue-600 shadow-sm min-w-[100px] transition-colors">?</div>
+            </div>
+
+            <div class="w-full bg-green-50 rounded-2xl p-6 flex items-center justify-between border border-green-100">
+                <div class="flex flex-col gap-1">
+                    <div class="flex items-center gap-2 text-green-600 mb-1">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"></path></svg>
+                        <span class="text-xs font-bold uppercase tracking-wider">Dishes</span>
+                    </div>
+                    <span class="text-lg font-bold text-gray-900">설거지 당번</span>
+                </div>
+                <div id="result-dishes" class="h-12 px-6 bg-white rounded-xl flex items-center justify-center font-bold text-xl text-green-600 shadow-sm min-w-[100px] transition-colors">?</div>
+            </div>
+
+            <button id="btn-run-chore" onclick="runChoreGame()" class="w-full bg-gray-900 text-white py-4 rounded-xl font-bold shadow-lg active:scale-95 transition-transform mt-8 text-lg disabled:opacity-50 disabled:active:scale-100">
+                추첨 시작하기!
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== 4. 여행지 뽑기 화면 (UI 수정: 칸 분리) ==================== -->
+    <div id="screen-trip-game" class="hidden-screen h-full w-full flex-col items-center justify-start p-6 pt-8 bg-white overflow-y-auto">
+        <div class="w-full max-w-xs flex flex-col gap-4">
+            <!-- 헤더 -->
+            <div class="flex items-center justify-between mb-2">
+                <button onclick="switchScreen('screen-game-menu')" class="p-2 -ml-2 text-gray-400 hover:text-black">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                <h2 class="text-lg font-bold">여행지 뽑기</h2>
+                <div class="w-8"></div>
+            </div>
+
+            <p class="text-center text-gray-500 text-sm mb-4">
+                이번 여행, 어디로 갈까요?<br>
+                <span class="text-xs text-gray-300">2단계 랜덤 추첨 시스템</span>
+            </p>
+
+            <!-- 1단계 결과 칸 -->
+            <div class="w-full bg-purple-50 rounded-2xl p-4 border-2 border-purple-100 flex flex-col items-center justify-center relative shadow-sm">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="w-6 h-6 bg-purple-200 rounded-full flex items-center justify-center text-purple-600 text-xs font-bold">1</span>
+                    <span class="text-xs font-bold text-purple-500 uppercase tracking-widest">REGION</span>
+                </div>
+                <div id="result-trip-step1" class="text-2xl font-bold text-gray-900 break-keep text-center min-h-[2rem]">?</div>
+            </div>
+
+            <!-- 화살표 (장식) -->
+            <div class="flex justify-center -my-2 z-10">
+                <div class="bg-white p-1 rounded-full border border-gray-100 shadow-sm">
+                    <svg class="text-gray-300" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
+                </div>
+            </div>
+
+            <!-- 2단계 결과 칸 -->
+            <div id="box-trip-step2" class="w-full bg-white rounded-2xl p-4 border-2 border-gray-100 flex flex-col items-center justify-center relative shadow-sm transition-colors duration-300">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 text-xs font-bold transition-colors" id="badge-step2">2</span>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest transition-colors" id="label-step2">DETAIL</span>
+                </div>
+                <div id="result-trip-step2" class="text-2xl font-bold text-gray-300 break-keep text-center min-h-[2rem] transition-colors">-</div>
+            </div>
+
+            <!-- 실행 버튼 -->
+            <button id="btn-run-trip" onclick="runTripGame()" class="w-full bg-purple-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-purple-200 active:scale-95 transition-transform mt-4 text-lg disabled:opacity-50 disabled:active:scale-100">
+                여행지 확인하기
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. 공통 데이터 및 설정
+        // ==========================================
+        const MEMBERS = ['전시기', '오스틴', '지노', '홍박사', '성원제'];
+
+        // 1단계 지역
+        const TRIP_REGIONS_SIMPLE = [
+            '서울특별시', '대전광역시', '대구광역시', '부산광역시', '인천광역시', '광주광역시', '세종특별자치시'
+        ];
+        
+        // 2단계 데이터
+        const TRIP_REGIONS_COMPLEX = {
+            '경기도': ['수원시', '고양시', '용인시', '성남시', '부천시', '화성시', '안산시', '남양주시', '안양시', '평택시', '시흥시', '파주시', '의정부시', '김포시', '광주시', '광명시', '군포시', '하남시', '오산시', '양주시', '이천시', '구리시', '안성시', '포천시', '의왕시', '양평군', '여주시', '동두천시', '가평군', '과천시', '연천군'],
+            '강원특별자치도': ['춘천시', '원주시', '강릉시', '동해시', '태백시', '속초시', '삼척시', '홍천군', '횡성군', '영월군', '평창군', '정선군', '철원군', '화천군', '양구군', '인제군', '고성군', '양양군'],
+            '충청북도': ['청주시', '충주시', '제천시', '보은군', '옥천군', '영동군', '증평군', '진천군', '괴산군', '음성군', '단양군'],
+            '충청남도': ['천안시', '공주시', '보령시', '아산시', '서산시', '논산시', '계룡시', '당진시', '금산군', '부여군', '서천군', '청양군', '홍성군', '예산군', '태안군'],
+            '전북특별자치도': ['전주시', '군산시', '익산시', '정읍시', '남원시', '김제시', '완주군', '진안군', '무주군', '장수군', '임실군', '순창군', '고창군', '부안군'],
+            '전라남도': ['목포시', '여수시', '순천시', '나주시', '광양시', '담양군', '곡성군', '구례군', '고흥군', '보성군', '화순군', '장흥군', '강진군', '해남군', '영암군', '무안군', '함평군', '영광군', '장성군', '완도군', '진도군', '신안군'],
+            '경상북도': ['포항시', '경주시', '김천시', '안동시', '구미시', '영주시', '영천시', '상주시', '문경시', '경산시', '군위군', '의성군', '청송군', '영양군', '영덕군', '청도군', '고령군', '성주군', '칠곡군', '예천군', '봉화군', '울진군', '울릉군'],
+            '경상남도': ['창원시', '진주시', '통영시', '사천시', '김해시', '밀양시', '거제시', '양산시', '의령군', '함안군', '창녕군', '고성군', '남해군', '하동군', '산청군', '함양군', '거창군', '합천군'],
+            '제주특별자치도': ['제주시', '서귀포시']
+        };
+
+        const REGION_POOL = [...TRIP_REGIONS_SIMPLE, ...Object.keys(TRIP_REGIONS_COMPLEX)];
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('[id^="screen-"]').forEach(el => {
+                el.classList.add('hidden-screen');
+                el.classList.remove('flex', 'fade-in');
+            });
+            const target = document.getElementById(screenId);
+            target.classList.remove('hidden-screen');
+            target.classList.add('flex', 'fade-in');
+        }
+
+        // ==========================================
+        // 0. 사운드 이펙트
+        // ==========================================
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+        function playWinSound() {
+            initAudio();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(659, audioCtx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.4);
+        }
+        function playTickSound() {
+            initAudio();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = 'triangle';
+            oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.05);
+        }
+
+        // ==========================================
+        // 2. 차량 배치 게임 로직
+        // ==========================================
+        let driverMode = 'random';
+        let selectedDriver = null;
+        let isCarGameRunning = false;
+
+        function resetCarGame() {
+            setDriverMode('random');
+            clearCarResults();
+        }
+
+        function clearCarResults() {
+            const seats = ['seat-driver', 'seat-p1', 'seat-b1', 'seat-b2', 'seat-b3'];
+            seats.forEach(id => {
+                const el = document.getElementById(id);
+                el.textContent = '?';
+                // 인라인 스타일 및 기존 색상 클래스 초기화
+                el.style.color = ''; 
+                el.classList.remove('shuffling', 'text-red-500', 'text-blue-600'); 
+                el.classList.add('text-black', 'text-gray-800');
+            });
+            if(driverMode === 'manual' && !selectedDriver) document.getElementById('seat-driver').textContent = '선택필요';
+        }
+
+        function setDriverMode(mode) {
+            if (isCarGameRunning) return;
+            driverMode = mode;
+            selectedDriver = null;
+            const btnRandom = document.getElementById('mode-random');
+            const btnManual = document.getElementById('mode-manual');
+            const selector = document.getElementById('manual-selector');
+
+            if (mode === 'random') {
+                btnRandom.classList.replace('text-gray-400', 'bg-white');
+                btnRandom.classList.add('text-black', 'shadow-sm');
+                btnManual.classList.remove('bg-white', 'text-black', 'shadow-sm');
+                btnManual.classList.add('text-gray-400');
+                selector.classList.add('hidden');
+                selector.classList.remove('flex');
+                document.getElementById('seat-driver').textContent = '?';
+            } else {
+                btnManual.classList.replace('text-gray-400', 'bg-white');
+                btnManual.classList.add('text-black', 'shadow-sm');
+                btnRandom.classList.remove('bg-white', 'text-black', 'shadow-sm');
+                btnRandom.classList.add('text-gray-400');
+                selector.classList.remove('hidden');
+                selector.classList.add('flex');
+                renderManualSelector();
+                document.getElementById('seat-driver').textContent = '선택필요';
+            }
+            clearCarResults();
+            if(mode === 'manual') document.getElementById('seat-driver').textContent = '선택필요';
+        }
+
+        function renderManualSelector() {
+            const container = document.getElementById('manual-selector');
+            container.innerHTML = '<p class="w-full text-xs text-gray-400 mb-1">운전할 사람을 먼저 선택하세요:</p>';
+            MEMBERS.forEach(member => {
+                const btn = document.createElement('button');
+                btn.className = `px-3 py-1 text-sm rounded-full border transition-all ${selectedDriver === member ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300'}`;
+                btn.textContent = member;
+                btn.onclick = () => {
+                    if (isCarGameRunning) return;
+                    selectedDriver = member;
+                    document.getElementById('seat-driver').textContent = member;
+                    renderManualSelector();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function runCarGame() {
+            if (isCarGameRunning) return;
+            if (driverMode === 'manual' && !selectedDriver) {
+                alert('운전자를 먼저 선택해주세요!');
+                return;
+            }
+            initAudio();
+            isCarGameRunning = true;
+            document.getElementById('btn-run-car').disabled = true;
+
+            let finalDriver = '';
+            let passengers = [];
+
+            if (driverMode === 'manual') {
+                finalDriver = selectedDriver;
+                passengers = MEMBERS.filter(m => m !== finalDriver);
+            } else {
+                const shuffled = [...MEMBERS].sort(() => Math.random() - 0.5);
+                finalDriver = shuffled[0];
+                passengers = shuffled.slice(1);
+            }
+            const shuffledPassengers = passengers.sort(() => Math.random() - 0.5);
+            const driverEl = document.getElementById('seat-driver');
+            const pEls = ['seat-p1', 'seat-b1', 'seat-b2', 'seat-b3'].map(id => document.getElementById(id));
+            
+            if (driverMode === 'random') animateShuffle(driverEl, MEMBERS, finalDriver, 2000);
+
+            pEls.forEach((el, index) => {
+                animateShuffle(el, MEMBERS, shuffledPassengers[index], 2000 + (index * 400)); 
+            });
+
+            setTimeout(() => {
+                isCarGameRunning = false;
+                document.getElementById('btn-run-car').disabled = false;
+            }, 3800);
+        }
+
+        // ==========================================
+        // 3. 청소/설거지 게임 로직
+        // ==========================================
+        let isChoreGameRunning = false;
+
+        function resetChoreGame() {
+            document.getElementById('result-cleaning').textContent = '?';
+            document.getElementById('result-dishes').textContent = '?';
+        }
+
+        function runChoreGame() {
+            if (isChoreGameRunning) return;
+            initAudio();
+            isChoreGameRunning = true;
+            document.getElementById('btn-run-chore').disabled = true;
+
+            const shuffled = [...MEMBERS].sort(() => Math.random() - 0.5);
+            const cleaner = shuffled[0];
+            const dishwasher = shuffled[1];
+            const cEl = document.getElementById('result-cleaning');
+            const dEl = document.getElementById('result-dishes');
+
+            animateShuffle(cEl, MEMBERS, cleaner, 1500);
+            animateShuffle(dEl, MEMBERS, dishwasher, 2500);
+
+            setTimeout(() => {
+                isChoreGameRunning = false;
+                document.getElementById('btn-run-chore').disabled = false;
+            }, 2700);
+        }
+
+        // ==========================================
+        // 4. 여행지 뽑기 로직 (2단계 UI 분리)
+        // ==========================================
+        let isTripGameRunning = false;
+
+        function resetTripGame() {
+            document.getElementById('result-trip-step1').textContent = '?';
+            document.getElementById('result-trip-step2').textContent = '-';
+            
+            // 스타일 초기화
+            const box2 = document.getElementById('box-trip-step2');
+            const text2 = document.getElementById('result-trip-step2');
+            const badge2 = document.getElementById('badge-step2');
+            const label2 = document.getElementById('label-step2');
+            
+            box2.classList.replace('border-purple-100', 'border-gray-100');
+            box2.classList.replace('bg-purple-50', 'bg-white');
+            text2.classList.replace('text-gray-900', 'text-gray-300');
+            badge2.classList.replace('bg-purple-200', 'bg-gray-100');
+            badge2.classList.replace('text-purple-600', 'text-gray-400');
+            label2.classList.replace('text-purple-500', 'text-gray-400');
+            
+            document.getElementById('result-trip-step1').classList.remove('shuffling', 'text-purple-600');
+            text2.classList.remove('shuffling', 'text-purple-600');
+        }
+        
+        function activateStep2UI() {
+            const box2 = document.getElementById('box-trip-step2');
+            const text2 = document.getElementById('result-trip-step2');
+            const badge2 = document.getElementById('badge-step2');
+            const label2 = document.getElementById('label-step2');
+            
+            box2.classList.replace('border-gray-100', 'border-purple-100');
+            box2.classList.replace('bg-white', 'bg-purple-50');
+            text2.classList.replace('text-gray-300', 'text-gray-900');
+            badge2.classList.replace('bg-gray-100', 'bg-purple-200');
+            badge2.classList.replace('text-gray-400', 'text-purple-600');
+            label2.classList.replace('text-gray-400', 'text-purple-500');
+        }
+
+        function runTripGame() {
+            if (isTripGameRunning) return;
+            initAudio();
+            isTripGameRunning = true;
+            document.getElementById('btn-run-trip').disabled = true;
+
+            // 리셋 먼저
+            resetTripGame();
+
+            const el1 = document.getElementById('result-trip-step1');
+            const el2 = document.getElementById('result-trip-step2');
+            const step1Result = REGION_POOL[Math.floor(Math.random() * REGION_POOL.length)];
+
+            // 1단계 애니메이션
+            animateShuffleCallback(el1, REGION_POOL, step1Result, 2000, () => {
+                
+                // 1단계 종료 후 로직
+                if (TRIP_REGIONS_COMPLEX[step1Result]) {
+                    // 2단계 필요 (도 단위)
+                    setTimeout(() => {
+                        activateStep2UI(); // UI 활성화
+                        
+                        // 2단계 데이터 풀
+                        const subRegions = TRIP_REGIONS_COMPLEX[step1Result];
+                        const step2Result = subRegions[Math.floor(Math.random() * subRegions.length)];
+                        
+                        // 2단계 애니메이션
+                        animateShuffleCallback(el2, subRegions, step2Result, 2000, () => {
+                            playWinSound();
+                            finishTripGame();
+                        });
+                    }, 300); // 짧은 대기
+                } else {
+                    // 1단계에서 종료 (특별시/광역시)
+                    el2.textContent = "해당 없음";
+                    playWinSound();
+                    finishTripGame();
+                }
+            });
+        }
+
+        function finishTripGame() {
+            isTripGameRunning = false;
+            document.getElementById('btn-run-trip').disabled = false;
+        }
+
+        // ==========================================
+        // 5. 공통 애니메이션 함수
+        // ==========================================
+        function animateShuffle(element, candidates, finalValue, duration) {
+            animateShuffleCallback(element, candidates, finalValue, duration, null);
+        }
+
+        function animateShuffleCallback(element, candidates, finalValue, duration, callback) {
+            element.classList.add('shuffling');
+            let tickCount = 0;
+            const interval = setInterval(() => {
+                const randomVal = candidates[Math.floor(Math.random() * candidates.length)];
+                element.textContent = randomVal;
+                tickCount++;
+                if(tickCount % 3 === 0) playTickSound(); 
+            }, 80); 
+
+            setTimeout(() => {
+                clearInterval(interval);
+                element.textContent = finalValue;
+                element.classList.remove('shuffling');
+                
+                // 단순 완료 효과
+                if (!callback) {
+                    playWinSound();
+                    element.style.transform = "scale(1.2)";
+                    
+                    // 색상 강조 (수정됨)
+                    if(element.id.includes('cleaning')) element.style.color = "#2563eb"; // 청소: 파랑(기본)
+                    else if(element.id.includes('dishes')) element.style.color = "#16a34a"; // 설거지: 초록
+                    else if(element.id.includes('seat')) element.style.color = "#005ED2"; // 차량: 엔조이 블루로 변경 (기존 빨강 #ef4444 제거)
+                    else if(element.id.includes('trip')) element.style.color = "#9333ea"; // 여행: 보라
+
+                    setTimeout(() => { element.style.transform = "scale(1)"; }, 300);
+                } else {
+                    // 콜백 실행 (2단계 등)
+                    callback();
+                    if(element.id.includes('trip')) {
+                        element.style.transform = "scale(1.1)";
+                        element.style.color = "#9333ea";
+                        setTimeout(() => { element.style.transform = "scale(1)"; }, 300);
+                    }
+                }
+            }, duration);
+        }
+
+    </script>
+</body>
+</html>
