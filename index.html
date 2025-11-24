@@ -43,14 +43,26 @@
 
         .hidden-screen { display: none; }
         .shuffling { color: #005ED2; opacity: 0.7; }
+
+        /* 알림 애니메이션 */
+        .slide-down { animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+        @keyframes slideUp { from { transform: translateY(0); } to { transform: translateY(-100%); } }
     </style>
 </head>
 <body class="h-[100dvh] w-full bg-gray-50 overflow-hidden relative">
 
+    <!-- ==================== 상단 알림 컨테이너 ==================== -->
+    <div id="notification-container" class="fixed top-0 left-0 w-full z-[100] flex flex-col items-center pointer-events-none">
+        <!-- 동적으로 알림이 추가됨 -->
+    </div>
+
     <!-- ==================== 관리자 버튼 (우측 상단) ==================== -->
-    <div class="absolute top-4 right-4 z-50">
-        <button onclick="openAdminLogin()" class="p-2 bg-white rounded-full shadow-md text-gray-400 hover:text-blue-600 transition-colors">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 위치를 헤더 라인으로 내리지 않고, 요청대로 아이콘 정렬을 위해 absolute 유지하되 위치 조정 -->
+    <div class="absolute top-6 right-6 z-50">
+        <button onclick="openAdminLogin()" class="p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm text-gray-400 hover:text-blue-600 transition-colors">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
             </svg>
@@ -84,7 +96,7 @@
             </div>
 
             <!-- 메뉴 버튼들 -->
-            <button onclick="switchScreen('screen-car-game');" class="btn-hover w-full bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-left flex flex-col gap-3 group relative overflow-hidden">
+            <button id="btn-menu-car" onclick="switchScreen('screen-car-game');" class="btn-hover w-full bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-left flex flex-col gap-3 group relative overflow-hidden">
                 <div class="absolute right-[-20px] top-[-20px] w-24 h-24 bg-blue-100 rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
                 <div class="w-12 h-12 bg-[#005ED2] text-white rounded-xl flex items-center justify-center z-10 shadow-md shadow-blue-200">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
@@ -95,7 +107,7 @@
                 </div>
             </button>
 
-            <button onclick="switchScreen('screen-chore-game');" class="btn-hover w-full bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-left flex flex-col gap-3 group relative overflow-hidden">
+            <button id="btn-menu-chore" onclick="switchScreen('screen-chore-game');" class="btn-hover w-full bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-left flex flex-col gap-3 group relative overflow-hidden">
                 <div class="absolute right-[-20px] top-[-20px] w-24 h-24 bg-green-100 rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
                 <div class="w-12 h-12 bg-green-500 text-white rounded-xl flex items-center justify-center z-10 shadow-md shadow-green-200">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 3v4"/><path d="M3 5h4"/><path d="M3 9h4"/></svg>
@@ -106,7 +118,7 @@
                 </div>
             </button>
 
-            <button onclick="switchScreen('screen-trip-game');" class="btn-hover w-full bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-left flex flex-col gap-3 group relative overflow-hidden">
+            <button id="btn-menu-trip" onclick="switchScreen('screen-trip-game');" class="btn-hover w-full bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-left flex flex-col gap-3 group relative overflow-hidden">
                 <div class="absolute right-[-20px] top-[-20px] w-24 h-24 bg-purple-100 rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
                 <div class="w-12 h-12 bg-purple-500 text-white rounded-xl flex items-center justify-center z-10 shadow-md shadow-purple-200">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
@@ -300,7 +312,6 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        // Firestore 문서 경로에 사용할 고정 ID (사용자 정의)
         const appId = 'random-enjoy-main'; 
 
         // 전역 상태
@@ -311,7 +322,7 @@
             admin: { resetTimestamp: 0, unlimited: false }
         };
         let localTimestamps = { car: 0, chore: 0, trip: 0 };
-        let isFirstLoad = true; // 첫 로드 여부 체크 (애니메이션 방지)
+        let isFirstLoad = true;
 
         let unsubscribe = null;
 
@@ -324,7 +335,6 @@
                     const data = snapshot.data();
                     handleGameStateChange(data);
                 } else {
-                    // 초기 데이터가 없으면 생성 (setDoc merge: true)
                     setDoc(docRef, {
                         car: { timestamp: 0 },
                         chore: { timestamp: 0 },
@@ -332,61 +342,56 @@
                         admin: { resetTimestamp: Date.now(), unlimited: false }
                     }, { merge: true }).catch(e => console.error("Error creating init doc:", e));
                 }
-                isFirstLoad = false; // 첫 스냅샷 처리 후 플래그 해제
+                isFirstLoad = false;
             }, (error) => {
                 console.error("Snapshot error:", error);
                 if(error.code === 'permission-denied') {
-                    alert("⚠️ 데이터베이스 권한 오류!\n\nFirebase 콘솔 [Firestore Database > 규칙] 탭에서\nallow read, write: if true; 로 설정해주세요.\n(테스트 모드 권장)");
+                    alert("⚠️ 권한 오류: Firebase Console 규칙을 확인하세요.");
                 }
             });
         };
 
-        // 로그인 및 데이터 구독
         const init = async () => {
             try {
                 await signInAnonymously(auth);
-
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         setupFirestoreListener();
-                        updateButtonVisibility(); // 초기 로드 시 버튼 상태 업데이트
-                    } else {
-                        console.error("Auth failed: No user");
+                        updateButtonVisibility(); 
                     }
                 });
-
             } catch (e) {
                 console.error("Init error:", e);
             }
         };
         init();
 
-        // 데이터 변경 처리 (애니메이션 트리거)
         function handleGameStateChange(newData) {
             const oldState = globalState;
             globalState = newData;
 
-            // 1. 관리자 설정 변경 감지 (UI 업데이트 등)
-            if (newData.admin) {
-                updateUnlimitedUI(newData.admin.unlimited);
-                updateButtonVisibility(); // 관리자 설정 변경 시 버튼 상태 갱신
-            }
+            // 1. 상단 알림(Notifications) 관리
+            updateTopNotifications(newData);
 
-            // 2. 각 게임별 업데이트 감지
-            // Car Game
+            // 2. 버튼 가시성 업데이트
+            updateButtonVisibility();
+
+            // 3. 게임별 업데이트 감지 및 표시
+            
+            // Car
             if (newData.car) {
                 if (newData.car.timestamp === 0) {
-                    window.resetCarGame(); // 초기화 상태면 리셋
+                    window.resetCarGame(); 
                 } else if (!isFirstLoad && newData.car.timestamp > localTimestamps.car) {
                     localTimestamps.car = newData.car.timestamp;
                     playCarGameAnimation(newData.car);
                 } else {
                     localTimestamps.car = newData.car.timestamp;
-                    displayCarResult(newData.car); // 조용히 표시
+                    displayCarResult(newData.car);
                 }
             }
 
-            // Chore Game
+            // Chore
             if (newData.chore) {
                 if (newData.chore.timestamp === 0) {
                     window.resetChoreGame();
@@ -399,7 +404,7 @@
                 }
             }
 
-            // Trip Game
+            // Trip
             if (newData.trip) {
                 if (newData.trip.timestamp === 0) {
                     window.resetTripGame();
@@ -413,33 +418,86 @@
             }
         }
 
-        // 버튼 가리기/보이기 로직 (전역 상태 기반)
+        // 상단 알림 관리 로직
+        let resetBannerShownTime = 0; 
+
+        function updateTopNotifications(data) {
+            const container = document.getElementById('notification-container');
+            const admin = data.admin;
+            const anyGamePlayed = (data.car?.timestamp > 0) || (data.chore?.timestamp > 0) || (data.trip?.timestamp > 0);
+
+            // 1. 무한 모드 알림 (Persistent)
+            let unlimitedBanner = document.getElementById('noti-unlimited');
+            if (admin.unlimited) {
+                if (!unlimitedBanner) {
+                    unlimitedBanner = createNotification('noti-unlimited', '🔥 무한 뽑기 모드 활성화 중!', 'bg-red-500', false);
+                    container.appendChild(unlimitedBanner);
+                }
+            } else {
+                if (unlimitedBanner) unlimitedBanner.remove();
+            }
+
+            // 2. 초기화 알림 (Dismissible + Auto-hide)
+            // 로직: admin.resetTimestamp가 변경되면 표시. 누군가 게임을 하면(anyGamePlayed) 제거.
+            let resetBanner = document.getElementById('noti-reset');
+            
+            // 리셋 타임스탬프가 변경되었는지 체크 (로컬 변수 이용)
+            if (admin.resetTimestamp > resetBannerShownTime) {
+                // 새 리셋 발생
+                resetBannerShownTime = admin.resetTimestamp;
+                // 기존 배너 제거 후 재생성 (애니메이션 효과)
+                if (resetBanner) resetBanner.remove();
+                
+                if (!anyGamePlayed) { // 게임이 진행되지 않은 상태여야 뜸
+                    resetBanner = createNotification('noti-reset', '📢 뽑기 기회가 초기화되었습니다!', 'bg-blue-600', true);
+                    container.appendChild(resetBanner);
+                }
+            }
+
+            // 게임이 진행되면 리셋 알림 제거
+            if (anyGamePlayed && resetBanner) {
+                resetBanner.classList.remove('slide-down');
+                resetBanner.classList.add('slide-up');
+                setTimeout(() => { if(resetBanner) resetBanner.remove(); }, 300);
+            }
+            
+            // 관리자 패널 UI 동기화
+            updateUnlimitedUI(admin.unlimited);
+        }
+
+        function createNotification(id, text, colorClass, dismissible) {
+            const el = document.createElement('div');
+            el.id = id;
+            el.className = `${colorClass} text-white px-6 py-3 rounded-b-xl shadow-lg flex items-center gap-3 pointer-events-auto mb-2 slide-down font-bold text-sm`;
+            
+            const span = document.createElement('span');
+            span.textContent = text;
+            el.appendChild(span);
+
+            if (dismissible) {
+                const btn = document.createElement('button');
+                btn.className = "ml-4 bg-white/20 hover:bg-white/40 rounded px-2 py-0.5 text-xs transition-colors";
+                btn.textContent = "확인";
+                btn.onclick = () => {
+                    el.classList.remove('slide-down');
+                    el.classList.add('slide-up');
+                    setTimeout(() => el.remove(), 300);
+                };
+                el.appendChild(btn);
+            }
+            return el;
+        }
+
         window.updateButtonVisibility = () => {
             const isUnlimited = globalState.admin?.unlimited;
-            
-            // Car: DB에 결과가 있고(timestamp > 0) 무한모드가 아니면 숨김
-            const carHasResult = globalState.car?.timestamp > 0;
-            if (!isUnlimited && carHasResult) {
-                document.getElementById('btn-run-car').style.display = 'none';
-            } else {
-                document.getElementById('btn-run-car').style.display = 'block';
-            }
+            // DB에 결과가 있으면 버튼 숨김 (누군가 뽑았으면 모두에게 숨김)
+            const carPlayed = globalState.car?.timestamp > 0;
+            const chorePlayed = globalState.chore?.timestamp > 0;
+            const tripPlayed = globalState.trip?.timestamp > 0;
 
-            // Chore
-            const choreHasResult = globalState.chore?.timestamp > 0;
-            if (!isUnlimited && choreHasResult) {
-                document.getElementById('btn-run-chore').style.display = 'none';
-            } else {
-                document.getElementById('btn-run-chore').style.display = 'block';
-            }
-
-            // Trip
-            const tripHasResult = globalState.trip?.timestamp > 0;
-            if (!isUnlimited && tripHasResult) {
-                document.getElementById('btn-run-trip').style.display = 'none';
-            } else {
-                document.getElementById('btn-run-trip').style.display = 'block';
-            }
+            document.getElementById('btn-run-car').style.display = (!isUnlimited && carPlayed) ? 'none' : 'block';
+            document.getElementById('btn-run-chore').style.display = (!isUnlimited && chorePlayed) ? 'none' : 'block';
+            document.getElementById('btn-run-trip').style.display = (!isUnlimited && tripPlayed) ? 'none' : 'block';
         }
 
         // ==================== 관리자 기능 ====================
@@ -451,7 +509,7 @@
             if (pw === '0920') {
                 closeAdminLogin();
                 document.getElementById('modal-admin-panel').classList.remove('hidden');
-                document.getElementById('admin-pw').value = ''; // 비번 초기화
+                document.getElementById('admin-pw').value = '';
             } else {
                 alert('비밀번호가 틀렸습니다.');
             }
@@ -459,17 +517,13 @@
 
         window.closeAdminPanel = () => document.getElementById('modal-admin-panel').classList.add('hidden');
 
-        // 관리자: 리셋 (수정됨: 데이터 전체 덮어쓰기)
         window.adminResetLimits = async () => {
             if (!confirm('모든 사용자의 뽑기 기회를 초기화하시겠습니까?')) return;
             try {
                 const docRef = doc(db, 'games', 'random_enjoy_state'); 
-                
-                // 안전한 업데이트: 현재 admin state를 가져와서 timestamp만 갱신하고 나머지는 초기화
                 const currentAdminState = globalState.admin || { unlimited: false };
                 
-                // setDoc 없이 전체 덮어쓰기 (merge: false와 동일한 효과를 내기 위해 필드 명시)
-                // car, chore, trip을 초기 상태(timestamp: 0)로 리셋
+                // 데이터 초기화
                 await setDoc(docRef, {
                     car: { timestamp: 0 },
                     chore: { timestamp: 0 },
@@ -479,21 +533,18 @@
                         resetTimestamp: Date.now() 
                     }
                 });
-                
-                alert('✅ 초기화가 완료되었습니다! 모든 사용자가 다시 뽑을 수 있습니다.');
+                // 성공 시 별도 alert 없음 (상단 팝업으로 대체됨)
+                closeAdminPanel();
             } catch (e) {
                 console.error("Reset failed:", e);
                 alert("초기화 실패: " + e.message);
             }
         };
 
-        // 관리자: 무한 모드 토글
         window.adminToggleUnlimited = async () => {
             try {
                 const current = globalState.admin?.unlimited || false;
                 const docRef = doc(db, 'games', 'random_enjoy_state');
-                
-                // 안전한 업데이트
                 const currentAdminState = globalState.admin || { resetTimestamp: 0 };
 
                 await setDoc(docRef, {
@@ -502,8 +553,8 @@
                         unlimited: !current
                     }
                 }, { merge: true });
+                // 성공 시 별도 alert 없음 (상단 팝업으로 대체됨)
             } catch (e) {
-                console.error("Toggle unlimited failed:", e);
                 alert("설정 변경 실패: " + e.message);
             }
         };
@@ -513,8 +564,8 @@
             const dot = btn.querySelector('div');
             if (isUnlimited) {
                 btn.classList.replace('bg-gray-300', 'bg-green-500');
-                dot.classList.replace('left-1', 'translate-x-5'); // 이동
-                dot.style.transform = 'translateX(20px)'; // tailwind translate class bug fix
+                dot.classList.replace('left-1', 'translate-x-5'); 
+                dot.style.transform = 'translateX(20px)'; 
             } else {
                 btn.classList.replace('bg-green-500', 'bg-gray-300');
                 dot.classList.replace('translate-x-5', 'left-1');
@@ -522,9 +573,7 @@
             }
         }
 
-        // ==================== 게임 요청 로직 (Client -> DB) ====================
-        
-        // 공통: 실행 가능 여부 체크 (로컬스토리지 방식 폐기, 글로벌 상태로 체크)
+        // ==================== 게임 요청 ====================
         function canPlay(gameType) {
             if (globalState.admin?.unlimited) return true; 
             if (globalState[gameType]?.timestamp > 0) {
@@ -534,13 +583,11 @@
             return true;
         }
 
-        // 1. 차량 게임 요청
         window.requestCarGame = async () => {
             if (!canPlay('car')) return;
             
             const driverMode = window.getDriverMode(); 
             const selectedDriver = window.getSelectedDriver();
-            
             if (driverMode === 'manual' && !selectedDriver) {
                 alert('운전자를 선택해주세요!');
                 return;
@@ -559,8 +606,6 @@
             const shuffledPassengers = passengers.sort(() => Math.random() - 0.5);
 
             const docRef = doc(db, 'games', 'random_enjoy_state');
-            // setDoc with merge: true to safely update/create
-            // Note: Overwriting the SAME document keeps storage size constant (~1KB)
             await setDoc(docRef, {
                 car: {
                     driver: finalDriver,
@@ -570,10 +615,8 @@
             }, { merge: true });
         };
 
-        // 2. 청소 게임 요청
         window.requestChoreGame = async () => {
             if (!canPlay('chore')) return;
-
             const shuffled = [...MEMBERS].sort(() => Math.random() - 0.5);
             const docRef = doc(db, 'games', 'random_enjoy_state');
             await setDoc(docRef, {
@@ -585,18 +628,14 @@
             }, { merge: true });
         };
 
-        // 3. 여행 게임 요청
         window.requestTripGame = async () => {
             if (!canPlay('trip')) return;
-
             const step1 = REGION_POOL[Math.floor(Math.random() * REGION_POOL.length)];
             let step2 = null;
-            
             if (TRIP_REGIONS_COMPLEX[step1]) {
                 const subs = TRIP_REGIONS_COMPLEX[step1];
                 step2 = subs[Math.floor(Math.random() * subs.length)];
             }
-
             const docRef = doc(db, 'games', 'random_enjoy_state');
             await setDoc(docRef, {
                 trip: {
@@ -607,19 +646,12 @@
             }, { merge: true });
         };
 
-
-        // ==================== 애니메이션 및 표시 로직 ====================
-        
-        // 차량 게임
+        // ==================== 애니메이션 및 표시 ====================
         function playCarGameAnimation(data) {
             window.initAudio();
-            // 애니메이션
             const driverEl = document.getElementById('seat-driver');
             const pEls = ['seat-p1', 'seat-b1', 'seat-b2', 'seat-b3'].map(id => document.getElementById(id));
-            
-            // 운전자는 랜덤 셔플 애니메이션 (수동모드였어도 보는 사람 입장에선 결과가 짠하고 나오는게 좋음)
             window.animateShuffle(driverEl, MEMBERS, data.driver, 2000);
-            
             pEls.forEach((el, i) => {
                 window.animateShuffle(el, MEMBERS, data.passengers[i], 2000 + (i * 400));
             });
@@ -627,7 +659,7 @@
         function displayCarResult(data) {
             if(!data.driver) return;
             document.getElementById('seat-driver').textContent = data.driver;
-            document.getElementById('seat-driver').style.color = "#005ED2"; // 파랑
+            document.getElementById('seat-driver').style.color = "#005ED2"; 
             const pIds = ['seat-p1', 'seat-b1', 'seat-b2', 'seat-b3'];
             pIds.forEach((id, i) => {
                 const el = document.getElementById(id);
@@ -636,7 +668,6 @@
             });
         }
 
-        // 청소 게임
         function playChoreGameAnimation(data) {
             window.initAudio();
             const cEl = document.getElementById('result-cleaning');
@@ -654,19 +685,15 @@
             dEl.style.color = "#16a34a";
         }
 
-        // 여행 게임
         function playTripGameAnimation(data) {
             window.initAudio();
             window.resetTripUI();
-            
             const el1 = document.getElementById('result-trip-step1');
             const el2 = document.getElementById('result-trip-step2');
-
             window.animateShuffleCallback(el1, REGION_POOL, data.step1, 2000, () => {
                 if (data.step2) {
                     setTimeout(() => {
                         window.activateStep2UI();
-                        // 2단계 셔플 (후보군: 해당 지역의 하위 지역)
                         const subRegions = TRIP_REGIONS_COMPLEX[data.step1];
                         window.animateShuffleCallback(el2, subRegions, data.step2, 2000, () => {
                             window.playWinSound();
@@ -683,7 +710,6 @@
             window.resetTripUI();
             document.getElementById('result-trip-step1').textContent = data.step1;
             document.getElementById('result-trip-step1').style.color = "#9333ea";
-            
             if (data.step2) {
                 window.activateStep2UI();
                 const el2 = document.getElementById('result-trip-step2');
@@ -693,7 +719,6 @@
                 document.getElementById('result-trip-step2').textContent = "해당 없음";
             }
         }
-
     </script>
 
     <!-- 기존 로직 스크립트 (UI Helper 및 사운드) -->
@@ -751,7 +776,6 @@
                 selector.classList.add('hidden');
                 selector.classList.remove('flex');
                 
-                // 기존 결과가 '선택필요'일 때만 '?'로 리셋
                 if(driverSeat.textContent === '선택필요') {
                     driverSeat.textContent = '?';
                     driverSeat.style.color = '';
@@ -765,13 +789,11 @@
                 selector.classList.add('flex');
                 renderManualSelector();
                 
-                // 기존 결과가 없거나 '?'일 때만 '선택필요'로 변경
                 if(driverSeat.textContent === '?' || driverSeat.textContent === '...') {
                     driverSeat.textContent = '선택필요';
                     driverSeat.style.color = 'gray';
                 }
             }
-            // clearCarResults(); // 삭제됨: 모드 변경 시 결과 유지
         }
         function renderManualSelector() {
             const container = document.getElementById('manual-selector');
@@ -783,7 +805,7 @@
                 btn.onclick = () => {
                     selectedDriver = member;
                     document.getElementById('seat-driver').textContent = member;
-                    document.getElementById('seat-driver').style.color = '#005ED2'; // 선택 시 파란색
+                    document.getElementById('seat-driver').style.color = '#005ED2';
                     renderManualSelector();
                 };
                 container.appendChild(btn);
@@ -804,7 +826,7 @@
             }
         }
 
-        // 청소 게임 UI Helper (Uncommented and fixed)
+        // 청소 게임 UI Helper
         window.resetChoreGame = () => {
             document.getElementById('result-cleaning').textContent = '?';
             document.getElementById('result-dishes').textContent = '?';
@@ -812,7 +834,7 @@
             document.getElementById('result-dishes').style.color = '';
         }
 
-        // 여행 게임 UI Helper (Uncommented and fixed)
+        // 여행 게임 UI Helper
         window.resetTripGame = () => {
             resetTripUI();
         }
