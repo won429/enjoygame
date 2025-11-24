@@ -47,23 +47,24 @@
 </head>
 <body class="h-[100dvh] w-full bg-gray-50 overflow-hidden relative">
 
+    <!-- ==================== 관리자 버튼 (우측 상단) ==================== -->
+    <div class="absolute top-4 right-4 z-50">
+        <button onclick="openAdminLogin()" class="p-2 bg-white rounded-full shadow-md text-gray-400 hover:text-blue-600 transition-colors">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+        </button>
+    </div>
+
     <!-- ==================== 1. 메인 메뉴 ==================== -->
     <div id="screen-game-menu" class="h-full w-full flex flex-col items-center justify-start p-6 pt-12 bg-gray-50 overflow-y-auto fade-in">
         <div class="w-full max-w-xs flex flex-col gap-6">
             
-            <!-- 상단 네비게이션 바 (뒤로가기 + 관리자 버튼) -->
-            <div class="w-full flex justify-between items-center -mb-4 z-10">
-                <!-- 뒤로가기 -->
+            <!-- 상단 네비게이션 바 (뒤로가기) -->
+            <div class="w-full flex justify-start -mb-4 z-10">
                 <button onclick="window.location.href='https://won429.github.io/enjoysite/'" class="p-2 -ml-2 text-gray-400 hover:text-black transition-colors" aria-label="메인으로">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                </button>
-
-                <!-- 관리자 버튼 -->
-                <button onclick="openAdminLogin()" class="p-2 -mr-2 text-gray-300 hover:text-blue-500 transition-colors" aria-label="관리자 로그인">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
                 </button>
             </div>
 
@@ -310,6 +311,7 @@
             admin: { resetTimestamp: 0, unlimited: false }
         };
         let localTimestamps = { car: 0, chore: 0, trip: 0 };
+        let isFirstLoad = true; // 첫 로드 여부 체크 (애니메이션 방지)
 
         let unsubscribe = null;
 
@@ -330,6 +332,7 @@
                         admin: { resetTimestamp: Date.now(), unlimited: false }
                     }, { merge: true }).catch(e => console.error("Error creating init doc:", e));
                 }
+                isFirstLoad = false; // 첫 스냅샷 처리 후 플래그 해제
             }, (error) => {
                 console.error("Snapshot error:", error);
                 if(error.code === 'permission-denied') {
@@ -384,25 +387,43 @@
             }
 
             // 2. 각 게임별 업데이트 감지
-            if (newData.car && newData.car.timestamp > localTimestamps.car) {
-                localTimestamps.car = newData.car.timestamp;
-                playCarGameAnimation(newData.car);
-            } else if (newData.car) {
-                displayCarResult(newData.car);
+            // Car Game
+            if (newData.car) {
+                if (newData.car.timestamp === 0) {
+                    window.resetCarGame(); // 초기화 상태면 리셋
+                } else if (!isFirstLoad && newData.car.timestamp > localTimestamps.car) {
+                    localTimestamps.car = newData.car.timestamp;
+                    playCarGameAnimation(newData.car);
+                } else {
+                    localTimestamps.car = newData.car.timestamp;
+                    displayCarResult(newData.car); // 조용히 표시
+                }
             }
 
-            if (newData.chore && newData.chore.timestamp > localTimestamps.chore) {
-                localTimestamps.chore = newData.chore.timestamp;
-                playChoreGameAnimation(newData.chore);
-            } else if (newData.chore) {
-                displayChoreResult(newData.chore);
+            // Chore Game
+            if (newData.chore) {
+                if (newData.chore.timestamp === 0) {
+                    window.resetChoreGame();
+                } else if (!isFirstLoad && newData.chore.timestamp > localTimestamps.chore) {
+                    localTimestamps.chore = newData.chore.timestamp;
+                    playChoreGameAnimation(newData.chore);
+                } else {
+                    localTimestamps.chore = newData.chore.timestamp;
+                    displayChoreResult(newData.chore);
+                }
             }
 
-            if (newData.trip && newData.trip.timestamp > localTimestamps.trip) {
-                localTimestamps.trip = newData.trip.timestamp;
-                playTripGameAnimation(newData.trip);
-            } else if (newData.trip) {
-                displayTripResult(newData.trip);
+            // Trip Game
+            if (newData.trip) {
+                if (newData.trip.timestamp === 0) {
+                    window.resetTripGame();
+                } else if (!isFirstLoad && newData.trip.timestamp > localTimestamps.trip) {
+                    localTimestamps.trip = newData.trip.timestamp;
+                    playTripGameAnimation(newData.trip);
+                } else {
+                    localTimestamps.trip = newData.trip.timestamp;
+                    displayTripResult(newData.trip);
+                }
             }
         }
 
@@ -806,7 +827,7 @@
             }
         }
 
-        // 청소 게임 UI Helper
+        // 청소 게임 UI Helper (Uncommented and fixed)
         window.resetChoreGame = () => {
             document.getElementById('result-cleaning').textContent = '?';
             document.getElementById('result-dishes').textContent = '?';
@@ -814,7 +835,7 @@
             document.getElementById('result-dishes').style.color = '';
         }
 
-        // 여행 게임 UI Helper
+        // 여행 게임 UI Helper (Uncommented and fixed)
         window.resetTripGame = () => {
             resetTripUI();
         }
