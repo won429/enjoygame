@@ -417,19 +417,20 @@
         }
 
         // 상단 알림 관리 로직
-        // lastBannerResetTime을 메모리에 저장해두어 중복 표시 방지
         let lastBannerResetTime = 0; 
 
         function updateTopNotifications(data) {
             const container = document.getElementById('notification-container');
             const admin = data.admin;
-            // 누군가 게임을 진행했는지 체크 (초기화 상태가 아님)
-            const anyGamePlayed = (data.car?.timestamp > 0) || (data.chore?.timestamp > 0) || (data.trip?.timestamp > 0);
+            
+            // [수정] 하나라도 X -> 셋 다 완료되었는지 체크
+            const allGamesPlayed = (data.car?.timestamp > 0) && (data.chore?.timestamp > 0) && (data.trip?.timestamp > 0);
 
             // 1. 무한 모드 알림 (Persistent)
             let unlimitedBanner = document.getElementById('noti-unlimited');
             if (admin.unlimited) {
                 if (!unlimitedBanner) {
+                    // 버튼 없이 생성
                     unlimitedBanner = createNotification('noti-unlimited', '🔥 무한 뽑기 모드 활성화 중!', 'bg-red-500', false);
                     container.appendChild(unlimitedBanner);
                 }
@@ -437,36 +438,23 @@
                 if (unlimitedBanner) unlimitedBanner.remove();
             }
 
-            // 2. 초기화 알림 (상태 기반)
-            // "Reset happened" state: resetTimestamp is newer than last stored, AND no game played yet.
+            // 2. 초기화 알림
             let resetBanner = document.getElementById('noti-reset');
             
-            // 서버의 리셋 시간이 내 로컬 마지막 확인 시간보다 크면 -> 새로운 리셋 발생
             if (admin.resetTimestamp > lastBannerResetTime) {
                 lastBannerResetTime = admin.resetTimestamp;
-                // 기존 배너 있으면 제거하고 새로 띄움 (깜빡임 효과)
                 if (resetBanner) resetBanner.remove();
                 
-                // 게임이 아직 진행 안 됐을 때만 배너 표시
-                if (!anyGamePlayed) {
-                    resetBanner = createNotification('noti-reset', '📢 뽑기 기회가 초기화되었습니다!', 'bg-blue-600', false); // 확인 버튼 없이(false)
-                    // 자동 사라짐 대신 "누군가 뽑으면 사라짐" 로직이므로 여기서는 추가만.
-                    // 근데 "알림 뜨고 사라지는거야"라고 했으니 3초 후 사라지게?
-                    // "누군가 다 뽑으면 배너는 자동으로 사라지게 해줘" -> This implies persistent until played.
-                    // "관리자가 초기화하고나면 알림만 뜨고 확인은 안해도돼. 그냥 상단에 알림 뜨고 사라지는거야." -> This implies transient.
-                    // Let's make it persistent until played, but without close button.
+                // 모든 게임이 끝나지 않았으면 배너 표시
+                if (!allGamesPlayed) {
+                    // [수정] 확인 버튼 없이 생성 (false)
+                    resetBanner = createNotification('noti-reset', '📢 뽑기 기회가 초기화되었습니다!', 'bg-blue-600', false); 
                     container.appendChild(resetBanner);
-                    
-                    // 3초 뒤에 자동으로 사라지게 (Transient behavior for admin action feedback)
-                    // Or keep it until played? The user said "누군가 다 뽑으면 사라지게".
-                    // Let's keep it until played. But also add auto-hide for just "Admin action feedback"?
-                    // The user prompt is slightly conflicting. "배너 뜨게 해줘... 누군가 뽑으면 사라지게" vs "알림 뜨고 사라지는거야".
-                    // I will make it disappear when played.
                 }
             }
 
-            // 게임이 진행되면(anyGamePlayed) 리셋 배너 제거
-            if (anyGamePlayed && resetBanner) {
+            // 3. 모든 게임이 완료되면 리셋 배너 제거 (자동)
+            if (allGamesPlayed && resetBanner) {
                 resetBanner.classList.remove('slide-down');
                 resetBanner.classList.add('slide-up');
                 setTimeout(() => { if(resetBanner) resetBanner.remove(); }, 300);
@@ -475,26 +463,17 @@
             updateUnlimitedUI(admin.unlimited);
         }
 
+        // [수정] 버튼 생성 로직 제거 (hasCloseBtn 파라미터 무시)
         function createNotification(id, text, colorClass, hasCloseBtn) {
             const el = document.createElement('div');
             el.id = id;
-            el.className = `${colorClass} text-white px-6 py-3 rounded-b-xl shadow-lg flex items-center gap-3 pointer-events-auto mb-2 slide-down font-bold text-sm`;
+            el.className = `${colorClass} text-white px-6 py-3 rounded-b-xl shadow-lg flex items-center gap-3 pointer-events-auto mb-2 slide-down font-bold text-sm justify-center`; // justify-center 추가
             
             const span = document.createElement('span');
             span.textContent = text;
             el.appendChild(span);
 
-            if (hasCloseBtn) {
-                const btn = document.createElement('button');
-                btn.className = "ml-4 bg-white/20 hover:bg-white/40 rounded px-2 py-0.5 text-xs transition-colors";
-                btn.textContent = "확인";
-                btn.onclick = () => {
-                    el.classList.remove('slide-down');
-                    el.classList.add('slide-up');
-                    setTimeout(() => el.remove(), 300);
-                };
-                el.appendChild(btn);
-            }
+            // 확인 버튼 생성 코드 삭제됨
             return el;
         }
 
@@ -527,7 +506,7 @@
 
         window.closeAdminPanel = () => document.getElementById('modal-admin-panel').classList.add('hidden');
 
-        // 관리자: 리셋 (수정됨)
+        // 관리자: 리셋
         window.adminResetLimits = async () => {
             if (!confirm('모든 사용자의 뽑기 기회를 초기화하시겠습니까?')) return;
             try {
@@ -543,7 +522,6 @@
                         resetTimestamp: Date.now() 
                     }
                 });
-                // 성공 시 Alert 없음 (상단 배너가 뜸)
                 closeAdminPanel();
             } catch (e) {
                 console.error("Reset failed:", e);
