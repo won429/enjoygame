@@ -52,14 +52,13 @@
         <div class="w-full max-w-xs flex flex-col gap-6">
             
             <!-- 상단 네비게이션 바 (뒤로가기 + 관리자 버튼) -->
-            <!-- [수정] flex justify-between으로 양쪽 끝 정렬 -->
             <div class="w-full flex justify-between items-center -mb-4 z-10">
                 <!-- 뒤로가기 -->
                 <button onclick="window.location.href='https://won429.github.io/enjoysite/'" class="p-2 -ml-2 text-gray-400 hover:text-black transition-colors" aria-label="메인으로">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 </button>
 
-                <!-- 관리자 버튼 (이제 컨텐츠 영역 안으로 들어옴) -->
+                <!-- 관리자 버튼 -->
                 <button onclick="openAdminLogin()" class="p-2 -mr-2 text-gray-300 hover:text-blue-500 transition-colors" aria-label="관리자 로그인">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -375,6 +374,11 @@
                     localStorage.removeItem('hasPlayed_trip');
                     localStorage.setItem('lastResetTs', newData.admin.resetTimestamp);
                     alert('관리자에 의해 뽑기 기회가 초기화되었습니다!');
+                    
+                    // [추가] 화면의 결과 텍스트도 초기화
+                    window.resetCarGame();
+                    window.resetChoreGame();
+                    window.resetTripGame();
                 }
                 updateButtonVisibility(); // 관리자 설정 변경 시 버튼 상태 갱신
             }
@@ -445,21 +449,26 @@
 
         window.closeAdminPanel = () => document.getElementById('modal-admin-panel').classList.add('hidden');
 
-        // 관리자: 리셋 (오류 수정됨)
+        // 관리자: 리셋 (수정됨: 데이터 전체 덮어쓰기)
         window.adminResetLimits = async () => {
             if (!confirm('모든 사용자의 뽑기 기회를 초기화하시겠습니까?')) return;
             try {
                 const docRef = doc(db, 'games', 'random_enjoy_state'); 
                 
-                // 안전한 업데이트: 현재 admin state를 가져와서 timestamp만 갱신
+                // 안전한 업데이트: 현재 admin state를 가져와서 timestamp만 갱신하고 나머지는 초기화
                 const currentAdminState = globalState.admin || { unlimited: false };
                 
+                // setDoc 없이 전체 덮어쓰기 (merge: false와 동일한 효과를 내기 위해 필드 명시)
+                // car, chore, trip을 초기 상태(timestamp: 0)로 리셋
                 await setDoc(docRef, {
+                    car: { timestamp: 0 },
+                    chore: { timestamp: 0 },
+                    trip: { timestamp: 0 },
                     admin: { 
                         ...currentAdminState, 
                         resetTimestamp: Date.now() 
                     }
-                }, { merge: true });
+                });
                 
                 alert('✅ 초기화가 완료되었습니다! 모든 사용자가 다시 뽑을 수 있습니다.');
             } catch (e) {
@@ -799,15 +808,15 @@
 
         // 청소 게임 UI Helper
         window.resetChoreGame = () => {
-            // document.getElementById('result-cleaning').textContent = '?';
-            // document.getElementById('result-dishes').textContent = '?';
-            // document.getElementById('result-cleaning').style.color = '';
-            // document.getElementById('result-dishes').style.color = '';
+            document.getElementById('result-cleaning').textContent = '?';
+            document.getElementById('result-dishes').textContent = '?';
+            document.getElementById('result-cleaning').style.color = '';
+            document.getElementById('result-dishes').style.color = '';
         }
 
         // 여행 게임 UI Helper
         window.resetTripGame = () => {
-            // resetTripUI();
+            resetTripUI();
         }
         window.resetTripUI = () => {
             document.getElementById('result-trip-step1').textContent = '?';
