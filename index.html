@@ -50,21 +50,276 @@
         @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
         @keyframes slideUp { from { transform: translateY(0); } to { transform: translateY(-100%); } }
     </style>
+
+    <!-- [UI Helper Script] 먼저 실행되어야 하는 함수들 -->
+    <script>
+        const MEMBERS = ['전시기', '오스틴', '지노', '홍박사', '성원제', '류짱'];
+        const TRIP_REGIONS_SIMPLE = ['서울특별시', '대전광역시', '대구광역시', '부산광역시', '인천광역시', '광주광역시', '세종특별자치시'];
+        const TRIP_REGIONS_COMPLEX = {
+            '경기도': ['수원시', '고양시', '용인시', '성남시', '부천시', '화성시', '안산시', '남양주시', '안양시', '평택시', '시흥시', '파주시', '의정부시', '김포시', '광주시', '광명시', '군포시', '하남시', '오산시', '양주시', '이천시', '구리시', '안성시', '포천시', '의왕시', '양평군', '여주시', '동두천시', '가평군', '과천시', '연천군'],
+            '강원특별자치도': ['춘천시', '원주시', '강릉시', '동해시', '태백시', '속초시', '삼척시', '홍천군', '횡성군', '영월군', '평창군', '정선군', '철원군', '화천군', '양구군', '인제군', '고성군', '양양군'],
+            '충청북도': ['청주시', '충주시', '제천시', '보은군', '옥천군', '영동군', '증평군', '진천군', '괴산군', '음성군', '단양군'],
+            '충청남도': ['천안시', '공주시', '보령시', '아산시', '서산시', '논산시', '계룡시', '당진시', '금산군', '부여군', '서천군', '청양군', '홍성군', '예산군', '태안군'],
+            '전북특별자치도': ['전주시', '군산시', '익산시', '정읍시', '남원시', '김제시', '완주군', '진안군', '무주군', '장수군', '임실군', '순창군', '고창군', '부안군'],
+            '전라남도': ['목포시', '여수시', '순천시', '나주시', '광양시', '담양군', '곡성군', '구례군', '고흥군', '보성군', '화순군', '장흥군', '강진군', '해남군', '영암군', '무안군', '함평군', '영광군', '장성군', '완도군', '진도군', '신안군'],
+            '경상북도': ['포항시', '경주시', '김천시', '안동시', '구미시', '영주시', '영천시', '상주시', '문경시', '경산시', '군위군', '의성군', '청송군', '영양군', '영덕군', '청도군', '고령군', '성주군', '칠곡군', '예천군', '봉화군', '울진군', '울릉군'],
+            '경상남도': ['창원시', '진주시', '통영시', '사천시', '김해시', '밀양시', '거제시', '양산시', '의령군', '함안군', '창녕군', '고성군', '남해군', '하동군', '산청군', '함양군', '거창군', '합천군'],
+            '제주특별자치도': ['제주시', '서귀포시']
+        };
+        const REGION_POOL = [...TRIP_REGIONS_SIMPLE, ...Object.keys(TRIP_REGIONS_COMPLEX)];
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('[id^="screen-"]').forEach(el => {
+                el.classList.add('hidden-screen');
+                el.classList.remove('flex', 'fade-in');
+            });
+            const target = document.getElementById(screenId);
+            target.classList.remove('hidden-screen');
+            target.classList.add('flex', 'fade-in');
+        }
+
+        // --- Car Game UI Logic ---
+        let carConfig = 1; 
+        let driverMode = 'random';
+        let selectedDrivers = [];
+
+        window.getCarConfig = () => carConfig;
+        window.getDriverMode = () => driverMode;
+        window.getSelectedDrivers = () => selectedDrivers;
+
+        window.setCarConfig = (cfg) => {
+            carConfig = cfg;
+            selectedDrivers = []; 
+            updateCarConfigBtn();
+            window.updateCarView(cfg);
+            window.setDriverMode(driverMode);
+        }
+
+        function updateCarConfigBtn() {
+            const btn1 = document.getElementById('btn-car-1');
+            const btn2 = document.getElementById('btn-car-2');
+            if (carConfig === 1) {
+                btn1.classList.replace('bg-white', 'bg-[#005ED2]'); btn1.classList.replace('text-gray-400', 'text-white'); btn1.classList.replace('border-gray-200', 'border-[#005ED2]');
+                btn2.classList.replace('bg-[#005ED2]', 'bg-white'); btn2.classList.replace('text-white', 'text-gray-400'); btn2.classList.replace('border-[#005ED2]', 'border-gray-200');
+            } else {
+                btn2.classList.replace('bg-white', 'bg-[#005ED2]'); btn2.classList.replace('text-gray-400', 'text-white'); btn2.classList.replace('border-gray-200', 'border-[#005ED2]');
+                btn1.classList.replace('bg-[#005ED2]', 'bg-white'); btn1.classList.replace('text-white', 'text-gray-400'); btn1.classList.replace('border-[#005ED2]', 'border-gray-200');
+            }
+        }
+
+        window.updateCarView = (cfg) => {
+            const view1 = document.getElementById('view-car-1');
+            const view2 = document.getElementById('view-car-2');
+            if (cfg === 1) {
+                view1.classList.remove('hidden'); view1.classList.add('flex');
+                view2.classList.add('hidden'); view2.classList.remove('flex');
+            } else {
+                view1.classList.add('hidden'); view1.classList.remove('flex');
+                view2.classList.remove('hidden'); view2.classList.add('flex');
+            }
+        }
+
+        // 운전자 좌석 요소 가져오기 (설정에 따라 다름)
+        function getDriverSeatElements() {
+            if (carConfig === 1) {
+                return [document.getElementById('seat-driver-1')];
+            } else {
+                return [document.getElementById('seat-driver-a'), document.getElementById('seat-driver-b')];
+            }
+        }
+
+        window.setDriverMode = (mode) => {
+            driverMode = mode;
+            selectedDrivers = [];
+            const btnRandom = document.getElementById('mode-random');
+            const btnManual = document.getElementById('mode-manual');
+            const selector = document.getElementById('manual-selector');
+            const driverSeats = getDriverSeatElements();
+
+            if (mode === 'random') {
+                btnRandom.classList.replace('text-gray-400', 'bg-white'); btnRandom.classList.add('text-black', 'shadow-sm');
+                btnManual.classList.remove('bg-white', 'text-black', 'shadow-sm'); btnManual.classList.add('text-gray-400');
+                selector.classList.add('hidden'); selector.classList.remove('flex');
+                
+                driverSeats.forEach(seat => {
+                    if(seat && seat.textContent === '선택필요') {
+                        seat.textContent = '?';
+                        seat.style.color = '';
+                    }
+                });
+            } else {
+                btnManual.classList.replace('text-gray-400', 'bg-white'); btnManual.classList.add('text-black', 'shadow-sm');
+                btnRandom.classList.remove('bg-white', 'text-black', 'shadow-sm'); btnRandom.classList.add('text-gray-400');
+                selector.classList.remove('hidden'); selector.classList.add('flex');
+                renderManualSelector();
+                
+                driverSeats.forEach(seat => {
+                    if(seat && (seat.textContent === '?' || seat.textContent === '...')) {
+                        seat.textContent = '선택필요';
+                        seat.style.color = 'gray';
+                    }
+                });
+            }
+        }
+
+        function renderManualSelector() {
+            const container = document.getElementById('manual-selector');
+            const max = carConfig === 1 ? 1 : 2;
+            container.innerHTML = `<p class="w-full text-xs text-gray-400 mb-1">운전자 ${max}명을 선택하세요:</p>`;
+            MEMBERS.forEach(member => {
+                const btn = document.createElement('button');
+                const isSelected = selectedDrivers.includes(member);
+                btn.className = `px-3 py-1 text-sm rounded-full border transition-all ${isSelected ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300'}`;
+                btn.textContent = member;
+                btn.onclick = () => {
+                    if (isSelected) {
+                        selectedDrivers = selectedDrivers.filter(m => m !== member);
+                    } else {
+                        if (selectedDrivers.length < max) selectedDrivers.push(member);
+                        else alert(`운전자는 최대 ${max}명까지만 선택 가능합니다.`);
+                    }
+                    
+                    // UI 업데이트: 선택된 운전자 이름을 좌석에 표시
+                    const driverSeats = getDriverSeatElements();
+                    driverSeats.forEach(seat => { if(seat) { seat.textContent = '선택필요'; seat.style.color = 'gray'; }}); // 일단 초기화
+                    
+                    selectedDrivers.forEach((driver, index) => {
+                        if (driverSeats[index]) {
+                            driverSeats[index].textContent = driver;
+                            driverSeats[index].style.color = '#005ED2';
+                        }
+                    });
+
+                    renderManualSelector();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        // --- Reset UI Functions ---
+        window.resetCarGameUI = () => {
+            const seats = document.querySelectorAll('[id^="seat-"]');
+            seats.forEach(el => { el.textContent = '?'; el.style.color = ''; el.classList.remove('shuffling'); });
+        }
+
+        window.resetChoreGameUI = () => {
+            document.getElementById('result-cleaning').textContent = '?'; document.getElementById('result-cleaning').style.color = '';
+            document.getElementById('result-dishes').textContent = '?'; document.getElementById('result-dishes').style.color = '';
+        }
+
+        window.resetTripGameUI = () => {
+            document.getElementById('result-trip-step1').textContent = '?'; document.getElementById('result-trip-step1').style.color = '';
+            document.getElementById('result-trip-step2').textContent = '-'; document.getElementById('result-trip-step2').style.color = '';
+            
+            const box2 = document.getElementById('box-trip-step2');
+            const text2 = document.getElementById('result-trip-step2');
+            const badge2 = document.getElementById('badge-step2');
+            const label2 = document.getElementById('label-step2');
+            
+            box2.classList.replace('border-purple-100', 'border-gray-100');
+            box2.classList.replace('bg-purple-50', 'bg-white');
+            text2.classList.replace('text-gray-900', 'text-gray-300');
+            badge2.classList.replace('bg-purple-200', 'bg-gray-100');
+            badge2.classList.replace('text-purple-600', 'text-gray-400');
+            label2.classList.replace('text-purple-500', 'text-gray-400');
+            
+            document.getElementById('result-trip-step1').classList.remove('shuffling');
+            text2.classList.remove('shuffling');
+        }
+
+        window.activateStep2UI = () => {
+            const box2 = document.getElementById('box-trip-step2');
+            const text2 = document.getElementById('result-trip-step2');
+            const badge2 = document.getElementById('badge-step2');
+            const label2 = document.getElementById('label-step2');
+            
+            box2.classList.replace('border-gray-100', 'border-purple-100');
+            box2.classList.replace('bg-white', 'bg-purple-50');
+            text2.classList.replace('text-gray-300', 'text-gray-900');
+            badge2.classList.replace('bg-gray-100', 'bg-purple-200');
+            badge2.classList.replace('text-gray-400', 'text-purple-600');
+            label2.classList.replace('text-gray-400', 'text-purple-500');
+        }
+
+        // --- Sound & Animations ---
+        let audioCtx = null;
+        window.initAudio = () => { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
+        
+        window.playWinSound = () => {
+            window.initAudio();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(659, audioCtx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
+            gainNode.gain.setValueAtTime(3.0, audioCtx.currentTime); 
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.4);
+        }
+        
+        window.playTickSound = () => {
+            window.initAudio();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = 'triangle';
+            oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(1.0, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.05);
+        }
+
+        window.animateShuffle = (element, candidates, finalValue, duration) => window.animateShuffleCallback(element, candidates, finalValue, duration, null);
+        
+        window.animateShuffleCallback = (element, candidates, finalValue, duration, callback) => {
+            element.classList.add('shuffling');
+            let tickCount = 0;
+            const interval = setInterval(() => {
+                const randomVal = candidates[Math.floor(Math.random() * candidates.length)];
+                element.textContent = randomVal;
+                tickCount++;
+                if(tickCount % 3 === 0) window.playTickSound(); 
+            }, 80); 
+
+            setTimeout(() => {
+                clearInterval(interval);
+                element.textContent = finalValue;
+                element.classList.remove('shuffling');
+                
+                if (!callback) {
+                    window.playWinSound();
+                    element.style.transform = "scale(1.2)";
+                    if(element.id.includes('cleaning')) element.style.color = "#2563eb"; 
+                    else if(element.id.includes('dishes')) element.style.color = "#16a34a"; 
+                    else if(element.id.includes('seat')) element.style.color = "#005ED2"; 
+                    else if(element.id.includes('trip')) element.style.color = "#9333ea";
+                    setTimeout(() => { element.style.transform = "scale(1)"; }, 300);
+                } else {
+                    callback();
+                    if(element.id.includes('trip')) {
+                        element.style.transform = "scale(1.1)";
+                        element.style.color = "#9333ea";
+                        setTimeout(() => { element.style.transform = "scale(1)"; }, 300);
+                    }
+                }
+            }, duration);
+        }
+    </script>
 </head>
 <body class="h-[100dvh] w-full bg-gray-50 overflow-hidden relative">
 
     <!-- ==================== 상단 알림 컨테이너 ==================== -->
-    <div id="notification-container" class="fixed top-0 left-0 w-full z-[100] flex flex-col items-center pointer-events-none">
-        <!-- 동적으로 알림이 추가됨 -->
-    </div>
+    <div id="notification-container" class="fixed top-0 left-0 w-full z-[100] flex flex-col items-center pointer-events-none"></div>
 
     <!-- ==================== 관리자 버튼 (우측 상단) ==================== -->
     <div class="absolute top-6 right-6 z-50">
         <button onclick="openAdminLogin()" class="p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm text-gray-400 hover:text-blue-600 transition-colors">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-            </svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         </button>
     </div>
 
@@ -89,8 +344,8 @@
             <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 mb-2">
                 <p class="text-xs text-blue-500 font-bold mb-1">PARTICIPANTS</p>
                 <p class="text-sm text-gray-700 leading-relaxed font-medium">
-                    전시기, 오스틴, 지노, 홍박사, 성원제 <br>
-                    <span class="text-gray-400 text-xs">(총 5명)</span>
+                    전시기, 오스틴, 지노, 홍박사, 성원제, 류짱 <br>
+                    <span class="text-gray-400 text-xs">(총 6명)</span>
                 </p>
             </div>
 
@@ -102,7 +357,7 @@
                 </div>
                 <div class="z-10">
                     <h3 class="text-lg font-bold mb-1">차량 & 운전자 뽑기</h3>
-                    <p class="text-xs text-gray-500">운전자와 좌석 위치를 랜덤으로 정합니다.</p>
+                    <p class="text-xs text-gray-500">차량 대수 선택 가능 (1대/2대)</p>
                 </div>
             </button>
 
@@ -130,7 +385,7 @@
         </div>
     </div>
 
-    <!-- ==================== 2. 차량 배치 화면 ==================== -->
+    <!-- ==================== 2. 차량 배치 화면 (대대적 수정) ==================== -->
     <div id="screen-car-game" class="hidden-screen h-full w-full flex-col items-center justify-start p-6 pt-8 bg-white overflow-y-auto">
         <div class="w-full max-w-xs flex flex-col gap-4">
             <div class="flex items-center justify-between mb-4">
@@ -139,6 +394,17 @@
                 <div class="w-8"></div>
             </div>
 
+            <!-- 차량 대수 선택 -->
+            <div class="flex gap-2">
+                <button id="btn-car-1" onclick="setCarConfig(1)" class="flex-1 py-3 rounded-xl border font-bold text-sm transition-all bg-[#005ED2] text-white border-[#005ED2]">
+                    차량 1대 (6인승)
+                </button>
+                <button id="btn-car-2" onclick="setCarConfig(2)" class="flex-1 py-3 rounded-xl border font-bold text-sm transition-all bg-white text-gray-400 border-gray-200">
+                    차량 2대 (3인승x2)
+                </button>
+            </div>
+
+            <!-- 옵션 선택 (운전자 설정) -->
             <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex flex-col gap-3">
                 <div class="flex justify-between items-center">
                     <span class="text-sm font-bold text-gray-700">운전자 선정 방식</span>
@@ -150,25 +416,87 @@
                 <div id="manual-selector" class="hidden flex-wrap gap-2 pt-2 border-t border-gray-200"></div>
             </div>
 
-            <div class="relative w-full aspect-[3/4] bg-[#f0f4f8] rounded-[2.5rem] border-4 border-gray-100 p-6 flex flex-col justify-between shadow-inner mt-2">
-                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-8 bg-gradient-to-b from-blue-100/50 to-transparent rounded-b-3xl"></div>
-                <div class="flex gap-4 mb-4">
-                    <div class="w-1/2 aspect-square bg-white rounded-2xl border-2 border-[#005ED2] flex flex-col items-center justify-center relative shadow-sm">
-                        <span class="absolute top-2 left-2 text-[10px] text-[#005ED2] font-bold bg-blue-50 px-1.5 py-0.5 rounded">DRIVER</span>
-                        <div id="seat-driver" class="text-lg font-bold text-black">?</div>
-                        <svg class="absolute bottom-2 right-2 text-blue-100 w-8 h-8" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+            <!-- 차량 시각화 영역 (Config에 따라 달라짐) -->
+            <div id="car-view-container" class="w-full">
+                <!-- 1대 (6인승) 뷰 -->
+                <div id="view-car-1" class="relative w-full aspect-[3/4] bg-[#f0f4f8] rounded-[2.5rem] border-4 border-gray-100 p-5 flex flex-col justify-between shadow-inner mt-2">
+                    <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-8 bg-gradient-to-b from-blue-100/50 to-transparent rounded-b-3xl"></div>
+                    
+                    <!-- 앞좌석 -->
+                    <div class="flex gap-4 mb-2">
+                        <div class="w-1/2 aspect-square bg-white rounded-2xl border-2 border-[#005ED2] flex flex-col items-center justify-center relative shadow-sm">
+                            <span class="absolute top-2 left-2 text-[10px] text-[#005ED2] font-bold bg-blue-50 px-1.5 py-0.5 rounded">DRIVER</span>
+                            <div id="seat-driver-1" class="text-lg font-bold text-black">?</div>
+                        </div>
+                        <div class="w-1/2 aspect-square bg-white rounded-2xl border border-gray-200 flex flex-col items-center justify-center relative shadow-sm">
+                            <span class="absolute top-2 left-2 text-[10px] text-gray-400">PASSENGER</span>
+                            <div id="seat-p-1" class="text-lg font-bold text-gray-800">?</div>
+                        </div>
                     </div>
-                    <div class="w-1/2 aspect-square bg-white rounded-2xl border border-gray-200 flex flex-col items-center justify-center relative shadow-sm">
-                        <span class="absolute top-2 left-2 text-[10px] text-gray-400">PASSENGER</span>
-                        <div id="seat-p1" class="text-lg font-bold text-gray-800">?</div>
+                    
+                    <!-- 중간 좌석 (New for 6-seater) -->
+                    <div class="flex gap-4 mb-2">
+                        <div class="flex-1 aspect-video bg-white rounded-xl border border-gray-200 flex items-center justify-center shadow-sm relative">
+                            <span class="absolute top-1 left-2 text-[8px] text-gray-300">MID</span>
+                            <div id="seat-m-1" class="text-sm font-bold text-gray-800">?</div>
+                        </div>
+                        <div class="flex-1 aspect-video bg-white rounded-xl border border-gray-200 flex items-center justify-center shadow-sm relative">
+                            <span class="absolute top-1 left-2 text-[8px] text-gray-300">MID</span>
+                            <div id="seat-m-2" class="text-sm font-bold text-gray-800">?</div>
+                        </div>
+                    </div>
+
+                    <!-- 뒷좌석 -->
+                    <div class="flex gap-4">
+                        <div class="flex-1 aspect-video bg-white rounded-xl border border-gray-200 flex items-center justify-center shadow-sm relative">
+                            <span class="absolute top-1 left-2 text-[8px] text-gray-300">BACK</span>
+                            <div id="seat-b-1" class="text-sm font-bold text-gray-800">?</div>
+                        </div>
+                        <div class="flex-1 aspect-video bg-white rounded-xl border border-gray-200 flex items-center justify-center shadow-sm relative">
+                            <span class="absolute top-1 left-2 text-[8px] text-gray-300">BACK</span>
+                            <div id="seat-b-2" class="text-sm font-bold text-gray-800">?</div>
+                        </div>
                     </div>
                 </div>
-                <div class="flex gap-2 h-24">
-                    <div class="flex-1 bg-white rounded-xl border border-gray-200 flex items-center justify-center shadow-sm"><div id="seat-b1" class="text-sm font-bold text-gray-800">?</div></div>
-                    <div class="flex-1 bg-white rounded-xl border border-gray-200 flex items-center justify-center shadow-sm"><div id="seat-b2" class="text-sm font-bold text-gray-800">?</div></div>
-                    <div class="flex-1 bg-white rounded-xl border border-gray-200 flex items-center justify-center shadow-sm"><div id="seat-b3" class="text-sm font-bold text-gray-800">?</div></div>
+
+                <!-- 2대 (3인승 x 2) 뷰 -->
+                <div id="view-car-2" class="hidden w-full flex-col gap-4 mt-2">
+                    <!-- CAR A -->
+                    <div class="bg-[#f0f4f8] rounded-3xl border-4 border-gray-100 p-4 shadow-inner">
+                        <p class="text-center text-xs font-bold text-gray-400 mb-2">CAR 1</p>
+                        <div class="flex gap-2 mb-2">
+                            <div class="w-1/2 aspect-square bg-white rounded-xl border-2 border-[#005ED2] flex flex-col items-center justify-center relative shadow-sm">
+                                <span class="absolute top-1 left-1 text-[8px] text-[#005ED2] font-bold bg-blue-50 px-1 rounded">DRV</span>
+                                <div id="seat-driver-a" class="text-sm font-bold text-black">?</div>
+                            </div>
+                            <div class="w-1/2 aspect-square bg-white rounded-xl border border-gray-200 flex flex-col items-center justify-center relative shadow-sm">
+                                <span class="absolute top-1 left-1 text-[8px] text-gray-400">PSG</span>
+                                <div id="seat-p-a" class="text-sm font-bold text-gray-800">?</div>
+                            </div>
+                        </div>
+                        <div class="w-full h-12 bg-white rounded-xl border border-gray-200 flex items-center justify-center shadow-sm">
+                            <div id="seat-b-a" class="text-sm font-bold text-gray-800">?</div>
+                        </div>
+                    </div>
+
+                    <!-- CAR B -->
+                    <div class="bg-[#f0f4f8] rounded-3xl border-4 border-gray-100 p-4 shadow-inner">
+                        <p class="text-center text-xs font-bold text-gray-400 mb-2">CAR 2</p>
+                        <div class="flex gap-2 mb-2">
+                            <div class="w-1/2 aspect-square bg-white rounded-xl border-2 border-[#005ED2] flex flex-col items-center justify-center relative shadow-sm">
+                                <span class="absolute top-1 left-1 text-[8px] text-[#005ED2] font-bold bg-blue-50 px-1 rounded">DRV</span>
+                                <div id="seat-driver-b" class="text-sm font-bold text-black">?</div>
+                            </div>
+                            <div class="w-1/2 aspect-square bg-white rounded-xl border border-gray-200 flex flex-col items-center justify-center relative shadow-sm">
+                                <span class="absolute top-1 left-1 text-[8px] text-gray-400">PSG</span>
+                                <div id="seat-p-b" class="text-sm font-bold text-gray-800">?</div>
+                            </div>
+                        </div>
+                        <div class="w-full h-12 bg-white rounded-xl border border-gray-200 flex items-center justify-center shadow-sm">
+                            <div id="seat-b-b" class="text-sm font-bold text-gray-800">?</div>
+                        </div>
+                    </div>
                 </div>
-                <p class="text-center text-xs text-gray-400 mt-2">BACK SEATS</p>
             </div>
 
             <button id="btn-run-car" onclick="requestCarGame()" class="w-full bg-[#005ED2] text-white py-4 rounded-xl font-bold shadow-lg shadow-blue-200 active:scale-95 transition-transform mt-2 text-lg">
@@ -185,7 +513,11 @@
                 <h2 class="text-lg font-bold">당번 뽑기</h2>
                 <div class="w-8"></div>
             </div>
-            <p class="text-center text-gray-500 text-sm mb-4">오늘의 희생양(?)을 뽑아주세요.</p>
+
+            <p class="text-center text-gray-500 text-sm mb-4">
+                오늘의 희생양(?)을 뽑아주세요.<br>
+                <span class="text-xs text-gray-300">공정하게 랜덤으로 추첨합니다.</span>
+            </p>
 
             <div class="w-full bg-blue-50 rounded-2xl p-6 flex items-center justify-between border border-blue-100">
                 <div class="flex flex-col gap-1">
@@ -215,16 +547,24 @@
         </div>
     </div>
 
-    <!-- ==================== 4. 여행지 게임 화면 ==================== -->
+    <!-- ==================== 4. 여행지 뽑기 화면 (UI 수정: 칸 분리) ==================== -->
     <div id="screen-trip-game" class="hidden-screen h-full w-full flex-col items-center justify-start p-6 pt-8 bg-white overflow-y-auto">
         <div class="w-full max-w-xs flex flex-col gap-4">
+            <!-- 헤더 -->
             <div class="flex items-center justify-between mb-2">
-                <button onclick="switchScreen('screen-game-menu')" class="p-2 -ml-2 text-gray-400 hover:text-black"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+                <button onclick="switchScreen('screen-game-menu')" class="p-2 -ml-2 text-gray-400 hover:text-black">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
                 <h2 class="text-lg font-bold">여행지 뽑기</h2>
                 <div class="w-8"></div>
             </div>
-            <p class="text-center text-gray-500 text-sm mb-4">2단계 랜덤 추첨 시스템</p>
 
+            <p class="text-center text-gray-500 text-sm mb-4">
+                이번 여행, 어디로 갈까요?<br>
+                <span class="text-xs text-gray-300">2단계 랜덤 추첨 시스템</span>
+            </p>
+
+            <!-- 1단계 결과 칸 -->
             <div class="w-full bg-purple-50 rounded-2xl p-4 border-2 border-purple-100 flex flex-col items-center justify-center relative shadow-sm">
                 <div class="flex items-center gap-2 mb-2">
                     <span class="w-6 h-6 bg-purple-200 rounded-full flex items-center justify-center text-purple-600 text-xs font-bold">1</span>
@@ -233,10 +573,14 @@
                 <div id="result-trip-step1" class="text-2xl font-bold text-gray-900 break-keep text-center min-h-[2rem]">?</div>
             </div>
 
+            <!-- 화살표 (장식) -->
             <div class="flex justify-center -my-2 z-10">
-                <div class="bg-white p-1 rounded-full border border-gray-100 shadow-sm"><svg class="text-gray-300" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg></div>
+                <div class="bg-white p-1 rounded-full border border-gray-100 shadow-sm">
+                    <svg class="text-gray-300" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
+                </div>
             </div>
 
+            <!-- 2단계 결과 칸 -->
             <div id="box-trip-step2" class="w-full bg-white rounded-2xl p-4 border-2 border-gray-100 flex flex-col items-center justify-center relative shadow-sm transition-colors duration-300">
                 <div class="flex items-center gap-2 mb-2">
                     <span class="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 text-xs font-bold transition-colors" id="badge-step2">2</span>
@@ -245,6 +589,7 @@
                 <div id="result-trip-step2" class="text-2xl font-bold text-gray-300 break-keep text-center min-h-[2rem] transition-colors">-</div>
             </div>
 
+            <!-- 실행 버튼 -->
             <button id="btn-run-trip" onclick="requestTripGame()" class="w-full bg-purple-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-purple-200 active:scale-95 transition-transform mt-4 text-lg">
                 여행지 확인하기
             </button>
@@ -294,12 +639,13 @@
         </div>
     </div>
 
+    <!-- [Firebase Script] 핵심 로직 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, updateDoc, setDoc, getDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase 초기화 (사용자 제공 설정)
+        // Firebase 초기화
         const firebaseConfig = {
             apiKey: "AIzaSyB_GKGcBR-MGnhpRz_UbdRIy_iZN9rjNq4",
             authDomain: "random-enjoy.firebaseapp.com",
@@ -322,34 +668,33 @@
         };
         let localTimestamps = { car: 0, chore: 0, trip: 0 };
         let isFirstLoad = true;
-
-        let unsubscribe = null;
+        let lastBannerResetTime = 0; 
 
         // Firestore 리스너 설정
         const setupFirestoreListener = () => {
             const docRef = doc(db, 'games', 'random_enjoy_state');
             
-            unsubscribe = onSnapshot(docRef, (snapshot) => {
+            onSnapshot(docRef, (snapshot) => {
                 if (snapshot.exists()) {
-                    const data = snapshot.data();
-                    handleGameStateChange(data);
+                    handleGameStateChange(snapshot.data());
                 } else {
                     setDoc(docRef, {
                         car: { timestamp: 0 },
                         chore: { timestamp: 0 },
                         trip: { timestamp: 0 },
                         admin: { resetTimestamp: Date.now(), unlimited: false }
-                    }, { merge: true }).catch(e => console.error("Error creating init doc:", e));
+                    }, { merge: true });
                 }
                 isFirstLoad = false;
             }, (error) => {
                 console.error("Snapshot error:", error);
                 if(error.code === 'permission-denied') {
-                    alert("⚠️ 권한 오류: Firebase Console 규칙을 확인하세요.");
+                    alert("⚠️ 데이터베이스 권한 오류!\n\nFirebase 콘솔 [Firestore Database > 규칙] 탭에서\nallow read, write: if true; 로 설정해주세요.\n(테스트 모드 권장)");
                 }
             });
         };
 
+        // 로그인 및 데이터 구독
         const init = async () => {
             try {
                 await signInAnonymously(auth);
@@ -365,6 +710,7 @@
         };
         init();
 
+        // 데이터 변경 처리
         function handleGameStateChange(newData) {
             const oldState = globalState;
             globalState = newData;
@@ -375,11 +721,25 @@
             // 2. 버튼 가시성 업데이트
             updateButtonVisibility();
 
-            // 3. 게임별 업데이트 감지
+            // 3. 리셋 감지 시 로컬 스토리지 클리어 및 UI 리셋
+            const lastReset = parseInt(localStorage.getItem('lastResetTs') || '0');
+            if (newData.admin && newData.admin.resetTimestamp > lastReset) {
+                localStorage.setItem('lastResetTs', newData.admin.resetTimestamp);
+                localStorage.removeItem('hasPlayed_car');
+                localStorage.removeItem('hasPlayed_chore');
+                localStorage.removeItem('hasPlayed_trip');
+                
+                // 화면 텍스트 즉시 초기화
+                window.resetCarGameUI();
+                window.resetChoreGameUI();
+                window.resetTripGameUI();
+            }
+
+            // 4. 게임별 업데이트 감지 (애니메이션 또는 단순 표시)
             // Car
             if (newData.car) {
                 if (newData.car.timestamp === 0) {
-                    window.resetCarGame(); 
+                    window.resetCarGameUI(); 
                 } else if (!isFirstLoad && newData.car.timestamp > localTimestamps.car) {
                     localTimestamps.car = newData.car.timestamp;
                     playCarGameAnimation(newData.car);
@@ -392,7 +752,7 @@
             // Chore
             if (newData.chore) {
                 if (newData.chore.timestamp === 0) {
-                    window.resetChoreGame();
+                    window.resetChoreGameUI();
                 } else if (!isFirstLoad && newData.chore.timestamp > localTimestamps.chore) {
                     localTimestamps.chore = newData.chore.timestamp;
                     playChoreGameAnimation(newData.chore);
@@ -405,7 +765,7 @@
             // Trip
             if (newData.trip) {
                 if (newData.trip.timestamp === 0) {
-                    window.resetTripGame();
+                    window.resetTripGameUI();
                 } else if (!isFirstLoad && newData.trip.timestamp > localTimestamps.trip) {
                     localTimestamps.trip = newData.trip.timestamp;
                     playTripGameAnimation(newData.trip);
@@ -417,16 +777,15 @@
         }
 
         // 상단 알림 관리 로직
-        let lastBannerResetTime = 0; 
-
         function updateTopNotifications(data) {
             const container = document.getElementById('notification-container');
             const admin = data.admin;
             
             // [수정] 하나라도 X -> 셋 다 완료되었는지 체크
+            // timestamp가 0보다 커야(게임이 진행되어야) true
             const allGamesPlayed = (data.car?.timestamp > 0) && (data.chore?.timestamp > 0) && (data.trip?.timestamp > 0);
 
-            // 1. 무한 모드 알림 (Persistent)
+            // 1. 무한 모드 알림
             let unlimitedBanner = document.getElementById('noti-unlimited');
             if (admin.unlimited) {
                 if (!unlimitedBanner) {
@@ -506,13 +865,17 @@
 
         window.closeAdminPanel = () => document.getElementById('modal-admin-panel').classList.add('hidden');
 
-        // 관리자: 리셋
+        // 관리자: 리셋 (수정됨: 데이터 전체 덮어쓰기)
         window.adminResetLimits = async () => {
             if (!confirm('모든 사용자의 뽑기 기회를 초기화하시겠습니까?')) return;
             try {
                 const docRef = doc(db, 'games', 'random_enjoy_state'); 
+                
+                // 안전한 업데이트: 현재 admin state를 가져와서 timestamp만 갱신하고 나머지는 초기화
                 const currentAdminState = globalState.admin || { unlimited: false };
                 
+                // setDoc 없이 전체 덮어쓰기 (merge: false와 동일한 효과를 내기 위해 필드 명시)
+                // car, chore, trip을 초기 상태(timestamp: 0)로 리셋
                 await setDoc(docRef, {
                     car: { timestamp: 0 },
                     chore: { timestamp: 0 },
@@ -522,6 +885,7 @@
                         resetTimestamp: Date.now() 
                     }
                 });
+                // 성공 시 별도 alert 없음 (상단 배너가 뜸)
                 closeAdminPanel();
             } catch (e) {
                 console.error("Reset failed:", e);
@@ -529,10 +893,13 @@
             }
         };
 
+        // 관리자: 무한 모드 토글
         window.adminToggleUnlimited = async () => {
             try {
                 const current = globalState.admin?.unlimited || false;
                 const docRef = doc(db, 'games', 'random_enjoy_state');
+                
+                // 안전한 업데이트
                 const currentAdminState = globalState.admin || { resetTimestamp: 0 };
 
                 await setDoc(docRef, {
@@ -560,7 +927,9 @@
             }
         }
 
-        // ==================== 게임 요청 ====================
+        // ==================== 게임 요청 로직 (Client -> DB) ====================
+        
+        // 공통: 실행 가능 여부 체크
         function canPlay(gameType) {
             if (globalState.admin?.unlimited) return true; 
             if (globalState[gameType]?.timestamp > 0) {
@@ -570,40 +939,54 @@
             return true;
         }
 
+        // 1. 차량 게임 요청
         window.requestCarGame = async () => {
             if (!canPlay('car')) return;
             
             const driverMode = window.getDriverMode(); 
-            const selectedDriver = window.getSelectedDriver();
-            if (driverMode === 'manual' && !selectedDriver) {
-                alert('운전자를 선택해주세요!');
-                return;
+            const selectedDrivers = window.getSelectedDrivers(); // Array
+            const carConfig = window.getCarConfig();
+
+            // Validation (수정된 로직 반영)
+            if (driverMode === 'manual') {
+                if (carConfig === 1 && selectedDrivers.length !== 1) {
+                    alert('운전자 1명을 선택해주세요!'); return;
+                }
+                if (carConfig === 2 && selectedDrivers.length !== 2) {
+                    alert('운전자 2명을 선택해주세요!'); return;
+                }
             }
 
-            let finalDriver = '';
+            let finalDrivers = [];
             let passengers = [];
+
             if (driverMode === 'manual') {
-                finalDriver = selectedDriver;
-                passengers = MEMBERS.filter(m => m !== finalDriver);
+                finalDrivers = [...selectedDrivers];
             } else {
+                // Random
                 const shuffled = [...MEMBERS].sort(() => Math.random() - 0.5);
-                finalDriver = shuffled[0];
-                passengers = shuffled.slice(1);
+                if (carConfig === 1) finalDrivers = [shuffled[0]];
+                else finalDrivers = [shuffled[0], shuffled[1]];
             }
-            const shuffledPassengers = passengers.sort(() => Math.random() - 0.5);
+
+            // Assign Passengers
+            passengers = MEMBERS.filter(m => !finalDrivers.includes(m)).sort(() => Math.random() - 0.5);
 
             const docRef = doc(db, 'games', 'random_enjoy_state');
             await setDoc(docRef, {
                 car: {
-                    driver: finalDriver,
-                    passengers: shuffledPassengers,
+                    config: carConfig,
+                    drivers: finalDrivers,
+                    passengers: passengers,
                     timestamp: Date.now()
                 }
             }, { merge: true });
         };
 
+        // 2. 청소 게임 요청
         window.requestChoreGame = async () => {
             if (!canPlay('chore')) return;
+
             const shuffled = [...MEMBERS].sort(() => Math.random() - 0.5);
             const docRef = doc(db, 'games', 'random_enjoy_state');
             await setDoc(docRef, {
@@ -615,14 +998,18 @@
             }, { merge: true });
         };
 
+        // 3. 여행 게임 요청
         window.requestTripGame = async () => {
             if (!canPlay('trip')) return;
+
             const step1 = REGION_POOL[Math.floor(Math.random() * REGION_POOL.length)];
             let step2 = null;
+            
             if (TRIP_REGIONS_COMPLEX[step1]) {
                 const subs = TRIP_REGIONS_COMPLEX[step1];
                 step2 = subs[Math.floor(Math.random() * subs.length)];
             }
+
             const docRef = doc(db, 'games', 'random_enjoy_state');
             await setDoc(docRef, {
                 trip: {
@@ -633,28 +1020,60 @@
             }, { merge: true });
         };
 
-        // ==================== 애니메이션 및 표시 ====================
+
+        // ==================== 애니메이션 및 표시 로직 ====================
+        
+        // 차량 게임
         function playCarGameAnimation(data) {
             window.initAudio();
-            const driverEl = document.getElementById('seat-driver');
-            const pEls = ['seat-p1', 'seat-b1', 'seat-b2', 'seat-b3'].map(id => document.getElementById(id));
-            window.animateShuffle(driverEl, MEMBERS, data.driver, 2000);
-            pEls.forEach((el, i) => {
-                window.animateShuffle(el, MEMBERS, data.passengers[i], 2000 + (i * 400));
-            });
+            window.updateCarView(data.config || 1); // Show correct car view
+            
+            if (data.config === 1) {
+                const driverEl = document.getElementById('seat-driver-1');
+                window.animateShuffle(driverEl, MEMBERS, data.drivers[0], 2000);
+                
+                const seatIds = ['seat-p-1', 'seat-m-1', 'seat-m-2', 'seat-b-1', 'seat-b-2'];
+                seatIds.forEach((id, i) => {
+                    const el = document.getElementById(id);
+                    if(data.passengers[i]) window.animateShuffle(el, MEMBERS, data.passengers[i], 2000 + (i * 300));
+                });
+            } else {
+                // 2 cars
+                const driverElA = document.getElementById('seat-driver-a');
+                const driverElB = document.getElementById('seat-driver-b');
+                window.animateShuffle(driverElA, MEMBERS, data.drivers[0], 2000);
+                window.animateShuffle(driverElB, MEMBERS, data.drivers[1], 2000);
+
+                const seatIds = ['seat-p-a', 'seat-b-a', 'seat-p-b', 'seat-b-b'];
+                seatIds.forEach((id, i) => {
+                    const el = document.getElementById(id);
+                    if(data.passengers[i]) window.animateShuffle(el, MEMBERS, data.passengers[i], 2000 + (i * 300));
+                });
+            }
         }
         function displayCarResult(data) {
-            if(!data.driver) return;
-            document.getElementById('seat-driver').textContent = data.driver;
-            document.getElementById('seat-driver').style.color = "#005ED2"; 
-            const pIds = ['seat-p1', 'seat-b1', 'seat-b2', 'seat-b3'];
-            pIds.forEach((id, i) => {
-                const el = document.getElementById(id);
-                el.textContent = data.passengers[i];
-                el.style.color = "#005ED2";
-            });
+            window.updateCarView(data.config || 1);
+            if(data.config === 1) {
+                if(data.drivers && data.drivers[0]) document.getElementById('seat-driver-1').textContent = data.drivers[0];
+                const seatIds = ['seat-p-1', 'seat-m-1', 'seat-m-2', 'seat-b-1', 'seat-b-2'];
+                seatIds.forEach((id, i) => {
+                    if(data.passengers && data.passengers[i]) document.getElementById(id).textContent = data.passengers[i];
+                });
+            } else {
+                if(data.drivers) {
+                    document.getElementById('seat-driver-a').textContent = data.drivers[0];
+                    document.getElementById('seat-driver-b').textContent = data.drivers[1];
+                }
+                const seatIds = ['seat-p-a', 'seat-b-a', 'seat-p-b', 'seat-b-b'];
+                seatIds.forEach((id, i) => {
+                    if(data.passengers && data.passengers[i]) document.getElementById(id).textContent = data.passengers[i];
+                });
+            }
+            // Add colors
+            document.querySelectorAll('[id^="seat-"]').forEach(el => el.style.color = '#005ED2');
         }
 
+        // 청소 게임
         function playChoreGameAnimation(data) {
             window.initAudio();
             const cEl = document.getElementById('result-cleaning');
@@ -672,15 +1091,19 @@
             dEl.style.color = "#16a34a";
         }
 
+        // 여행 게임
         function playTripGameAnimation(data) {
             window.initAudio();
-            window.resetTripUI();
+            window.resetTripGameUI();
+            
             const el1 = document.getElementById('result-trip-step1');
             const el2 = document.getElementById('result-trip-step2');
+
             window.animateShuffleCallback(el1, REGION_POOL, data.step1, 2000, () => {
                 if (data.step2) {
                     setTimeout(() => {
                         window.activateStep2UI();
+                        // 2단계 셔플 (후보군: 해당 지역의 하위 지역)
                         const subRegions = TRIP_REGIONS_COMPLEX[data.step1];
                         window.animateShuffleCallback(el2, subRegions, data.step2, 2000, () => {
                             window.playWinSound();
@@ -694,9 +1117,10 @@
         }
         function displayTripResult(data) {
             if(!data.step1) return;
-            window.resetTripUI();
+            window.resetTripGameUI();
             document.getElementById('result-trip-step1').textContent = data.step1;
             document.getElementById('result-trip-step1').style.color = "#9333ea";
+            
             if (data.step2) {
                 window.activateStep2UI();
                 const el2 = document.getElementById('result-trip-step2');
@@ -706,231 +1130,7 @@
                 document.getElementById('result-trip-step2').textContent = "해당 없음";
             }
         }
-    </script>
 
-    <!-- 기존 로직 스크립트 (UI Helper 및 사운드) -->
-    <script>
-        const MEMBERS = ['전시기', '오스틴', '지노', '홍박사', '성원제'];
-        const TRIP_REGIONS_SIMPLE = ['서울특별시', '대전광역시', '대구광역시', '부산광역시', '인천광역시', '광주광역시', '세종특별자치시'];
-        const TRIP_REGIONS_COMPLEX = {
-            '경기도': ['수원시', '고양시', '용인시', '성남시', '부천시', '화성시', '안산시', '남양주시', '안양시', '평택시', '시흥시', '파주시', '의정부시', '김포시', '광주시', '광명시', '군포시', '하남시', '오산시', '양주시', '이천시', '구리시', '안성시', '포천시', '의왕시', '양평군', '여주시', '동두천시', '가평군', '과천시', '연천군'],
-            '강원특별자치도': ['춘천시', '원주시', '강릉시', '동해시', '태백시', '속초시', '삼척시', '홍천군', '횡성군', '영월군', '평창군', '정선군', '철원군', '화천군', '양구군', '인제군', '고성군', '양양군'],
-            '충청북도': ['청주시', '충주시', '제천시', '보은군', '옥천군', '영동군', '증평군', '진천군', '괴산군', '음성군', '단양군'],
-            '충청남도': ['천안시', '공주시', '보령시', '아산시', '서산시', '논산시', '계룡시', '당진시', '금산군', '부여군', '서천군', '청양군', '홍성군', '예산군', '태안군'],
-            '전북특별자치도': ['전주시', '군산시', '익산시', '정읍시', '남원시', '김제시', '완주군', '진안군', '무주군', '장수군', '임실군', '순창군', '고창군', '부안군'],
-            '전라남도': ['목포시', '여수시', '순천시', '나주시', '광양시', '담양군', '곡성군', '구례군', '고흥군', '보성군', '화순군', '장흥군', '강진군', '해남군', '영암군', '무안군', '함평군', '영광군', '장성군', '완도군', '진도군', '신안군'],
-            '경상북도': ['포항시', '경주시', '김천시', '안동시', '구미시', '영주시', '영천시', '상주시', '문경시', '경산시', '군위군', '의성군', '청송군', '영양군', '영덕군', '청도군', '고령군', '성주군', '칠곡군', '예천군', '봉화군', '울진군', '울릉군'],
-            '경상남도': ['창원시', '진주시', '통영시', '사천시', '김해시', '밀양시', '거제시', '양산시', '의령군', '함안군', '창녕군', '고성군', '남해군', '하동군', '산청군', '함양군', '거창군', '합천군'],
-            '제주특별자치도': ['제주시', '서귀포시']
-        };
-        const REGION_POOL = [...TRIP_REGIONS_SIMPLE, ...Object.keys(TRIP_REGIONS_COMPLEX)];
-
-        // UI Helpers
-        function switchScreen(screenId) {
-            document.querySelectorAll('[id^="screen-"]').forEach(el => {
-                el.classList.add('hidden-screen');
-                el.classList.remove('flex', 'fade-in');
-            });
-            const target = document.getElementById(screenId);
-            target.classList.remove('hidden-screen');
-            target.classList.add('flex', 'fade-in');
-        }
-
-        // 차량 게임 UI Helper
-        let driverMode = 'random';
-        let selectedDriver = null;
-        
-        window.getDriverMode = () => driverMode;
-        window.getSelectedDriver = () => selectedDriver;
-
-        window.resetCarGame = () => {
-            window.setDriverMode('random');
-            clearCarResults();
-        }
-        window.setDriverMode = (mode) => {
-            driverMode = mode;
-            selectedDriver = null;
-            const btnRandom = document.getElementById('mode-random');
-            const btnManual = document.getElementById('mode-manual');
-            const selector = document.getElementById('manual-selector');
-            const driverSeat = document.getElementById('seat-driver');
-
-            if (mode === 'random') {
-                btnRandom.classList.replace('text-gray-400', 'bg-white');
-                btnRandom.classList.add('text-black', 'shadow-sm');
-                btnManual.classList.remove('bg-white', 'text-black', 'shadow-sm');
-                btnManual.classList.add('text-gray-400');
-                selector.classList.add('hidden');
-                selector.classList.remove('flex');
-                
-                if(driverSeat.textContent === '선택필요') {
-                    driverSeat.textContent = '?';
-                    driverSeat.style.color = '';
-                }
-            } else {
-                btnManual.classList.replace('text-gray-400', 'bg-white');
-                btnManual.classList.add('text-black', 'shadow-sm');
-                btnRandom.classList.remove('bg-white', 'text-black', 'shadow-sm');
-                btnRandom.classList.add('text-gray-400');
-                selector.classList.remove('hidden');
-                selector.classList.add('flex');
-                renderManualSelector();
-                
-                if(driverSeat.textContent === '?' || driverSeat.textContent === '...') {
-                    driverSeat.textContent = '선택필요';
-                    driverSeat.style.color = 'gray';
-                }
-            }
-        }
-        function renderManualSelector() {
-            const container = document.getElementById('manual-selector');
-            container.innerHTML = '<p class="w-full text-xs text-gray-400 mb-1">운전할 사람을 먼저 선택하세요:</p>';
-            MEMBERS.forEach(member => {
-                const btn = document.createElement('button');
-                btn.className = `px-3 py-1 text-sm rounded-full border transition-all ${selectedDriver === member ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300'}`;
-                btn.textContent = member;
-                btn.onclick = () => {
-                    selectedDriver = member;
-                    document.getElementById('seat-driver').textContent = member;
-                    document.getElementById('seat-driver').style.color = '#005ED2';
-                    renderManualSelector();
-                };
-                container.appendChild(btn);
-            });
-        }
-        function clearCarResults() {
-            const seats = ['seat-driver', 'seat-p1', 'seat-b1', 'seat-b2', 'seat-b3'];
-            seats.forEach(id => {
-                const el = document.getElementById(id);
-                el.textContent = '?';
-                el.style.color = ''; 
-                el.classList.remove('shuffling', 'text-red-500', 'text-blue-600'); 
-                el.classList.add('text-black', 'text-gray-800');
-            });
-            if(driverMode === 'manual' && !selectedDriver) {
-                document.getElementById('seat-driver').textContent = '선택필요';
-                document.getElementById('seat-driver').style.color = 'gray';
-            }
-        }
-
-        // 청소 게임 UI Helper
-        window.resetChoreGame = () => {
-            document.getElementById('result-cleaning').textContent = '?';
-            document.getElementById('result-dishes').textContent = '?';
-            document.getElementById('result-cleaning').style.color = '';
-            document.getElementById('result-dishes').style.color = '';
-        }
-
-        // 여행 게임 UI Helper
-        window.resetTripGame = () => {
-            resetTripUI();
-        }
-        window.resetTripUI = () => {
-            document.getElementById('result-trip-step1').textContent = '?';
-            document.getElementById('result-trip-step2').textContent = '-';
-            
-            const box2 = document.getElementById('box-trip-step2');
-            const text2 = document.getElementById('result-trip-step2');
-            const badge2 = document.getElementById('badge-step2');
-            const label2 = document.getElementById('label-step2');
-            
-            box2.classList.replace('border-purple-100', 'border-gray-100');
-            box2.classList.replace('bg-purple-50', 'bg-white');
-            text2.classList.replace('text-gray-900', 'text-gray-300');
-            badge2.classList.replace('bg-purple-200', 'bg-gray-100');
-            badge2.classList.replace('text-purple-600', 'text-gray-400');
-            label2.classList.replace('text-purple-500', 'text-gray-400');
-            
-            document.getElementById('result-trip-step1').classList.remove('shuffling', 'text-purple-600');
-            text2.classList.remove('shuffling', 'text-purple-600');
-            document.getElementById('result-trip-step1').style.color = '';
-            text2.style.color = '';
-        }
-        window.activateStep2UI = () => {
-            const box2 = document.getElementById('box-trip-step2');
-            const text2 = document.getElementById('result-trip-step2');
-            const badge2 = document.getElementById('badge-step2');
-            const label2 = document.getElementById('label-step2');
-            
-            box2.classList.replace('border-gray-100', 'border-purple-100');
-            box2.classList.replace('bg-white', 'bg-purple-50');
-            text2.classList.replace('text-gray-300', 'text-gray-900');
-            badge2.classList.replace('bg-gray-100', 'bg-purple-200');
-            badge2.classList.replace('text-gray-400', 'text-purple-600');
-            label2.classList.replace('text-gray-400', 'text-purple-500');
-        }
-
-        // 사운드
-        let audioCtx = null;
-        window.initAudio = () => {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-        }
-        window.playWinSound = () => {
-            window.initAudio();
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(659, audioCtx.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
-            gainNode.gain.setValueAtTime(3.0, audioCtx.currentTime); 
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            oscillator.start();
-            oscillator.stop(audioCtx.currentTime + 0.4);
-        }
-        window.playTickSound = () => {
-            window.initAudio();
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            oscillator.type = 'triangle';
-            oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
-            gainNode.gain.setValueAtTime(1.0, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            oscillator.start();
-            oscillator.stop(audioCtx.currentTime + 0.05);
-        }
-
-        // 공통 애니메이션
-        window.animateShuffle = (element, candidates, finalValue, duration) => {
-            window.animateShuffleCallback(element, candidates, finalValue, duration, null);
-        }
-        window.animateShuffleCallback = (element, candidates, finalValue, duration, callback) => {
-            element.classList.add('shuffling');
-            let tickCount = 0;
-            const interval = setInterval(() => {
-                const randomVal = candidates[Math.floor(Math.random() * candidates.length)];
-                element.textContent = randomVal;
-                tickCount++;
-                if(tickCount % 3 === 0) window.playTickSound(); 
-            }, 80); 
-
-            setTimeout(() => {
-                clearInterval(interval);
-                element.textContent = finalValue;
-                element.classList.remove('shuffling');
-                
-                if (!callback) {
-                    window.playWinSound();
-                    element.style.transform = "scale(1.2)";
-                    if(element.id.includes('cleaning')) element.style.color = "#2563eb"; 
-                    else if(element.id.includes('dishes')) element.style.color = "#16a34a"; 
-                    else if(element.id.includes('seat')) element.style.color = "#005ED2"; 
-                    else if(element.id.includes('trip')) element.style.color = "#9333ea";
-                    setTimeout(() => { element.style.transform = "scale(1)"; }, 300);
-                } else {
-                    callback();
-                    if(element.id.includes('trip')) {
-                        element.style.transform = "scale(1.1)";
-                        element.style.color = "#9333ea";
-                        setTimeout(() => { element.style.transform = "scale(1)"; }, 300);
-                    }
-                }
-            }, duration);
-        }
     </script>
 </body>
 </html>
