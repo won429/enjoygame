@@ -28,6 +28,18 @@ const maps = {
     bg: '#fff7ed',
     text: '#1f2937',
     pointer: '#fb7185'
+  },
+  sunset: {
+    colors: ['#ef4444', '#f97316', '#f59e0b', '#fb7185', '#ec4899', '#f43f5e', '#dc2626', '#ea580c'],
+    bg: '#fff1f2',
+    text: '#ffffff',
+    pointer: '#b91c1c'
+  },
+  aurora: {
+    colors: ['#0ea5e9', '#14b8a6', '#22c55e', '#84cc16', '#06b6d4', '#10b981', '#3b82f6', '#6366f1'],
+    bg: '#ecfeff',
+    text: '#f8fafc',
+    pointer: '#0f766e'
   }
 };
 
