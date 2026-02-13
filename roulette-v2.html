@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>룰렛</title>
+  <link rel="stylesheet" href="roulette-v2.css" />
+</head>
+<body>
+  <main class="app">
+    <section class="card wheel-wrap">
+      <div class="pointer" id="pointer" aria-hidden="true"></div>
+      <canvas id="wheel" width="800" height="800"></canvas>
+    </section>
+
+    <section class="card">
+      <h1>룰렛</h1>
+      <p class="sub">가능해요. 맵 선택(기본/야간/캔디) 추가했습니다.</p>
+      <label class="map-select-label" for="mapType">맵 선택</label>
+      <select id="mapType" class="map-select">
+        <option value="classic">기본맵</option>
+        <option value="night">야간맵</option>
+        <option value="candy">캔디맵</option>
+        <option value="sunset">노을맵</option>
+        <option value="aurora">오로라맵</option>
+      </select>
+      <textarea id="names">전시기
+오스틴
+지노
+홍박사</textarea>
+      <div class="count" id="count">4명</div>
+      <div class="row">
+        <button class="primary" id="spin">돌리기</button>
+        <button id="shuffle">섞기</button>
+        <button id="reset">기본값</button>
+      </div>
+      <div class="result" id="result">결과: -</div>
+    </section>
+  </main>
+
+  <script src="roulette-v2.js"></script>
+</body>
+</html>
