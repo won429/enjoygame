@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>룰렛</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <section class="card wheel-wrap">
+      <div class="pointer" aria-hidden="true"></div>
+      <canvas id="wheel" width="800" height="800"></canvas>
+    </section>
+
+    <section class="card">
+      <h1>룰렛</h1>
+      <p class="sub">로컬 코드 버전 (충돌 줄이기 위해 스타일/스크립트 분리).</p>
+      <textarea id="names">전시기
+오스틴
+지노
+홍박사</textarea>
+      <div class="count" id="count">4명</div>
+      <div class="row">
+        <button class="primary" id="spin">돌리기</button>
+        <button id="shuffle">섞기</button>
+        <button id="reset">기본값</button>
+      </div>
+      <div class="result" id="result">결과: -</div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
